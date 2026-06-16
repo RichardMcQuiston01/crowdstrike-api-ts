@@ -1,0 +1,37 @@
+{
+  "name": "cloudstrike-ts-api",
+  "version": "0.1.0",
+  "description": "TypeScript helper for interacting with the CrowdStrike Falcon API",
+  "author": "Richard McQuiston",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "lint": "gts lint",
+    "lint:fix": "gts fix",
+    "format": "gts fix",
+    "clean": "gts clean && rm -rf dist",
+    "prepublishOnly": "bun run clean && bun run typecheck && bun run lint && bun run test && bun run build"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "gts": "^7.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.0"
+  }
+}

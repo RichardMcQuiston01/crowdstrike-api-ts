@@ -1,0 +1,14 @@
+{
+  "resources": ["abc123", "def456"],
+  "errors": [],
+  "meta": {
+    "query_time": 0.012,
+    "pagination": {
+      "offset": 0,
+      "limit": 100,
+      "total": 2
+    },
+    "powered_by": "device-api",
+    "trace_id": "trace-query-abc"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "resources": [
+    {
+      "cloud_request_id": "req-123",
+      "queued_command_offline": false,
+      "session_id": "session-abc"
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "query_time": 0.05,
+    "trace_id": "trace-execute-command"
+  }
+}

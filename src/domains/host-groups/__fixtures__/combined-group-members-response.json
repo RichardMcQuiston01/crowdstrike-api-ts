@@ -1,0 +1,17 @@
+{
+  "resources": [
+    {
+      "device_id": "abc123",
+      "cid": "cid-001",
+      "hostname": "WIN-LAPTOP-01",
+      "platform_name": "Windows",
+      "status": "normal",
+      "tags": ["FalconGroupingTags/finance"]
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "query_time": 0.03,
+    "trace_id": "trace-combined-members"
+  }
+}

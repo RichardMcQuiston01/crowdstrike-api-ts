@@ -1,0 +1,19 @@
+{
+  "resources": [
+    {
+      "id": "group1",
+      "name": "Finance Laptops",
+      "description": "All finance department laptops",
+      "group_type": "static",
+      "created_by": "admin@example.com",
+      "created_timestamp": "2025-01-01T00:00:00Z",
+      "modified_by": "admin@example.com",
+      "modified_timestamp": "2025-06-01T00:00:00Z"
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "query_time": 0.02,
+    "trace_id": "trace-group-details"
+  }
+}

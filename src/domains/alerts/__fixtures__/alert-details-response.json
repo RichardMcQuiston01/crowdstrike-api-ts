@@ -1,0 +1,23 @@
+{
+  "resources": [
+    {
+      "composite_id": "comp-1",
+      "severity": 80,
+      "severity_name": "high",
+      "status": "new",
+      "assigned_to_name": "Jane Doe",
+      "assigned_to_uuid": "uuid-1",
+      "tactic": "Execution",
+      "technique": "Command and Scripting Interpreter",
+      "created_timestamp": "2026-06-01T00:00:00Z",
+      "updated_timestamp": "2026-06-01T01:00:00Z",
+      "agent_id": "abc123",
+      "platform": "Windows"
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "query_time": 0.02,
+    "trace_id": "trace-alert-details"
+  }
+}

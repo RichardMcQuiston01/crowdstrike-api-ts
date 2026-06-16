@@ -1,0 +1,17 @@
+{
+  "resources": [
+    {
+      "base_command": "ls",
+      "complete": true,
+      "session_id": "session-abc",
+      "stderr": "",
+      "stdout": "Directory listing:\nfile1.txt\nfile2.txt",
+      "task_id": "task-1"
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "query_time": 0.02,
+    "trace_id": "trace-command-status"
+  }
+}

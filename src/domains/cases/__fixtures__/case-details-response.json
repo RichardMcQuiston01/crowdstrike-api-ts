@@ -1,0 +1,24 @@
+{
+  "resources": [
+    {
+      "id": "case-1",
+      "cid": "cid-001",
+      "name": "Suspicious PowerShell activity",
+      "description": "Encoded PowerShell command detected on finance laptop",
+      "status": "open",
+      "severity": 80,
+      "reference_id": "CS-1001",
+      "tags": ["priority/high"],
+      "created_timestamp": "2026-06-01T10:00:00Z",
+      "updated_timestamp": "2026-06-02T08:30:00Z",
+      "start_timestamp": "2026-06-01T09:55:00Z",
+      "end_timestamp": "2026-06-02T08:30:00Z",
+      "version": 3
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "query_time": 0.04,
+    "trace_id": "trace-case-details"
+  }
+}

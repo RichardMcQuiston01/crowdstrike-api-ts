@@ -1,0 +1,27 @@
+{
+  "resources": [
+    {
+      "cve_id": "CVE-2026-12345",
+      "severity": "Critical",
+      "cvss_score": 9.8,
+      "description": "Remote code execution in libfoo before 1.2.3",
+      "exploited_status_string": "Actively Exploited",
+      "exploit_found": true,
+      "images_impacted": 4,
+      "containers_impacted": 12,
+      "packages_impacted": 1,
+      "remediation_available": true,
+      "published_date": "2026-05-01T00:00:00Z"
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "query_time": 0.03,
+    "pagination": {
+      "offset": 0,
+      "limit": 100,
+      "total": 1
+    },
+    "trace_id": "trace-search-vulns"
+  }
+}
