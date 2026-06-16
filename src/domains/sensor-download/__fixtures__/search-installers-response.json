@@ -1,0 +1,29 @@
+{
+  "resources": [
+    {
+      "sha256": "9f1a2b3c4d5e6f708192a3b4c5d6e7f809192a3b4c5d6e7f8091a2b3c4d5e6f",
+      "name": "WindowsSensor.exe",
+      "description": "Falcon Sensor for Windows",
+      "version": "7.2.0.12345",
+      "platform": "windows",
+      "os": "Windows",
+      "os_version": "10/11",
+      "file_type": "exe",
+      "file_size": 24576000,
+      "architectures": ["x86_64"],
+      "is_lts": true,
+      "lts_expiry_date": "2027-01-01T00:00:00Z",
+      "release_date": "2026-05-01T00:00:00Z"
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "query_time": 0.03,
+    "pagination": {
+      "offset": 0,
+      "limit": 100,
+      "total": 1
+    },
+    "trace_id": "trace-search-installers"
+  }
+}

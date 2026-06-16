@@ -242,5 +242,28 @@ describe('HttpClient', () => {
       });
       expect(result.resources).toEqual(['a', 'b']);
     });
+
+    it('returns a Blob when responseType is blob', async () => {
+      const fetchImpl = mock(
+        async () =>
+          new Response(new Blob(['binary-content']), {
+            status: 200,
+            headers: {'Content-Type': 'application/octet-stream'},
+          }),
+      );
+      const http = new HttpClient(
+        'https://api.crowdstrike.com',
+        null,
+        fetchImpl as unknown as typeof fetch,
+      );
+
+      const result = await http.request<Blob>({
+        method: 'GET',
+        path: '/sensors/entities/download-installer/v3',
+        responseType: 'blob',
+      });
+      expect(result).toBeInstanceOf(Blob);
+      expect(await result.text()).toBe('binary-content');
+    });
   });
 });

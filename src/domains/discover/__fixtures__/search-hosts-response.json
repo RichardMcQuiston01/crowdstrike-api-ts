@@ -1,0 +1,40 @@
+{
+  "resources": [
+    {
+      "id": "host-1",
+      "cid": "cid-001",
+      "hostname": "WIN-LAPTOP-01",
+      "fqdn": "win-laptop-01.corp.example.com",
+      "aid": "aid-001",
+      "agent_version": "7.14.0",
+      "platform_name": "Windows",
+      "os_version": "Windows 11",
+      "entity_type": "managed",
+      "criticality": "high",
+      "internet_exposure": "not_exposed",
+      "external_ip": "203.0.113.5",
+      "current_local_ip": "10.0.0.5",
+      "local_ip_addresses": ["10.0.0.5"],
+      "mac_addresses": ["00-11-22-33-44-55"],
+      "first_seen_timestamp": "2026-01-01T00:00:00Z",
+      "last_seen_timestamp": "2026-06-15T00:00:00Z",
+      "discovering_by": ["sensor"],
+      "data_providers": ["falcon"],
+      "tags": ["finance"],
+      "groups": ["default"],
+      "managed_by": "falcon-sensor",
+      "owned_by": "jdoe@example.com",
+      "department": "Finance",
+      "system_manufacturer": "Dell Inc.",
+      "system_product_name": "Latitude 7420"
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "pagination": {
+      "after": "next-cursor",
+      "limit": 1,
+      "total": 2
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "resources": [
+    {
+      "id": "policy1",
+      "cid": "cid-001",
+      "name": "Default Windows Policy",
+      "description": "Baseline prevention policy for Windows endpoints",
+      "platform_name": "Windows",
+      "enabled": true,
+      "groups": [{"id": "group1", "name": "Finance Laptops"}],
+      "ioa_rule_groups": [],
+      "prevention_settings": [
+        {
+          "id": "category1",
+          "name": "Sensor Visibility",
+          "settings": [
+            {"id": "ProcessProtection", "value": {"enabled": true}}
+          ]
+        }
+      ],
+      "created_by": "admin@example.com",
+      "created_timestamp": "2026-01-01T00:00:00Z",
+      "modified_by": "admin@example.com",
+      "modified_timestamp": "2026-02-01T00:00:00Z"
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "query_time": 0.03,
+    "pagination": {
+      "offset": 0,
+      "limit": 100,
+      "total": 1
+    },
+    "trace_id": "trace-search-policies"
+  }
+}

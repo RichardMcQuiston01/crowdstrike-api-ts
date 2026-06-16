@@ -1,0 +1,25 @@
+{
+  "resources": [
+    {
+      "id": "app-1",
+      "cid": "cid-001",
+      "name": "7-Zip",
+      "vendor": "Igor Pavlov",
+      "version": "23.01",
+      "category": "Utilities",
+      "software_type": "application",
+      "groups": ["default"],
+      "installation_paths": ["C:\\Program Files\\7-Zip"],
+      "first_seen_timestamp": "2026-01-01T00:00:00Z",
+      "last_used_timestamp": "2026-06-10T00:00:00Z",
+      "is_suspicious": false
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "pagination": {
+      "limit": 100,
+      "total": 1
+    }
+  }
+}

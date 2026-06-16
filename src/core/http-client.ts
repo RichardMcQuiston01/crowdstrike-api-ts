@@ -16,6 +16,8 @@ export interface RequestOptions<TBody = unknown> {
   body?: TBody;
   /** 'json' (default) or 'form' for x-www-form-urlencoded (used by the OAuth2 token endpoint). */
   bodyEncoding?: 'json' | 'form';
+  /** 'json' (default) or 'blob' for binary downloads (used by sensor installer downloads). */
+  responseType?: 'json' | 'blob';
   signal?: AbortSignal;
 }
 
@@ -92,6 +94,10 @@ export class HttpClient {
 
     if (response.status === 204) {
       return undefined as TResponse;
+    }
+
+    if (options.responseType === 'blob') {
+      return (await response.blob()) as TResponse;
     }
 
     return (await response.json()) as TResponse;

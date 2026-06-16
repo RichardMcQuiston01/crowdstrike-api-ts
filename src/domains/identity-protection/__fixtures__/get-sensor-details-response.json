@@ -1,0 +1,33 @@
+{
+  "resources": [
+    {
+      "cid": "abc123",
+      "device_id": "dc-0a1b2c3d4e5f6071",
+      "hostname": "dc01.corp.example.com",
+      "agent_version": "7.2.0",
+      "local_ip": "10.0.0.5",
+      "machine_domain": "corp.example.com",
+      "os_version": "Windows Server 2022",
+      "status": "enforced",
+      "status_causes": [],
+      "idp_policy_id": "policy_1",
+      "idp_policy_name": "Default Policy",
+      "heartbeat_time": 1769990400,
+      "ti_enabled": "true",
+      "directory_auditing": "enabled",
+      "group_policy_object": "Default Domain Policy",
+      "kerberos_config": "enabled",
+      "ldap_config": "enabled",
+      "ldaps_config": "enabled",
+      "new_enforcement_mode": "false",
+      "ntlm_config": "enabled",
+      "rdp_to_dc_config": "enabled",
+      "smb_to_dc_config": "enabled"
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "query_time": 0.04,
+    "trace_id": "trace-get-sensor-details"
+  }
+}

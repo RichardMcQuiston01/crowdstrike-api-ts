@@ -1,0 +1,52 @@
+{
+  "resources": [
+    {
+      "id": "rulegroup-1",
+      "name": "Suspicious PowerShell",
+      "description": "Flags suspicious PowerShell command lines",
+      "comment": "initial version",
+      "platform": "Windows",
+      "enabled": true,
+      "deleted": false,
+      "version": 1,
+      "rule_ids": ["rule-1"],
+      "rules": [
+        {
+          "instance_id": "rule-1",
+          "rulegroup_id": "rulegroup-1",
+          "ruletype_id": "ruletype-1",
+          "ruletype_name": "Process Creation",
+          "name": "Encoded command",
+          "description": "Detects -EncodedCommand usage",
+          "comment": "initial version",
+          "action_label": "Detect",
+          "disposition_id": 20,
+          "pattern_id": "pattern-1",
+          "pattern_severity": "high",
+          "enabled": true,
+          "deleted": false,
+          "field_values": [
+            {
+              "name": "CommandLine",
+              "type": "string",
+              "value": "*-EncodedCommand*",
+              "label": "Command Line"
+            }
+          ],
+          "instance_version": 1,
+          "version_ids": ["rule-1-v1"],
+          "created_by": "jdoe@example.com",
+          "created_on": "2026-01-01T00:00:00Z",
+          "modified_by": "jdoe@example.com",
+          "modified_on": "2026-01-01T00:00:00Z"
+        }
+      ],
+      "created_by": "jdoe@example.com",
+      "created_on": "2026-01-01T00:00:00Z",
+      "modified_by": "jdoe@example.com",
+      "modified_on": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "errors": [],
+  "meta": {"pagination": {"offset": 0, "limit": 100, "total": 1}}
+}

@@ -1,0 +1,30 @@
+{
+  "resources": [
+    {
+      "id": "res_9f1a2b3c4d5e6f708192a3b4c5d6e7f8",
+      "cid": "abc123",
+      "resource_id": "i-0a1b2c3d4e5f60718",
+      "resource_name": "web-server-01",
+      "resource_type": "ec2-instance",
+      "resource_type_name": "EC2 Instance",
+      "cloud_provider": "aws",
+      "account_id": "111122223333",
+      "account_name": "prod-account",
+      "region": "us-east-1",
+      "service": "EC2",
+      "service_category": "Compute",
+      "status": "running",
+      "active": true,
+      "first_seen": "2026-01-15T00:00:00Z",
+      "updated_at": "2026-06-01T00:00:00Z",
+      "tags": [{"key": "env", "value": "prod"}],
+      "cloud_labels": [],
+      "cloud_groups": ["production"]
+    }
+  ],
+  "errors": [],
+  "meta": {
+    "query_time": 0.05,
+    "trace_id": "trace-get-resources"
+  }
+}
