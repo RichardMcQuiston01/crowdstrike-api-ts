@@ -1,13 +1,13 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {HostsClient} from './hosts.client';
-import type {HttpClient} from '../../core/http-client';
-import {CrowdStrikeApiError} from '../../core/errors';
+import { describe, it, expect, mock } from 'bun:test';
+import { HostsClient } from './hosts.client';
+import type { HttpClient } from '../../core/http-client';
+import { CrowdStrikeApiError } from '../../core/errors';
 import queryDevicesFixture from './__fixtures__/query-devices-response.json';
 import deviceDetailsFixture from './__fixtures__/device-details-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('HostsClient', () => {
@@ -45,7 +45,7 @@ describe('HostsClient', () => {
 
       const result = await hosts.search();
 
-      expect(result.pagination).toEqual({offset: 0, limit: 0, total: 2});
+      expect(result.pagination).toEqual({ offset: 0, limit: 0, total: 2 });
     });
 
     it('propagates CrowdStrikeApiError from the underlying request', async () => {
@@ -53,7 +53,7 @@ describe('HostsClient', () => {
         request: mock(async () => {
           throw new CrowdStrikeApiError({
             status: 403,
-            errors: [{code: 403, message: 'denied'}],
+            errors: [{ code: 403, message: 'denied' }],
             requestPath: '/devices/queries/devices/v1',
           });
         }),
@@ -70,18 +70,18 @@ describe('HostsClient', () => {
         {
           resources: ['a', 'b'],
           errors: [],
-          meta: {pagination: {offset: 0, limit: 2, total: 3}},
+          meta: { pagination: { offset: 0, limit: 2, total: 3 } },
         },
         {
           resources: ['c'],
           errors: [],
-          meta: {pagination: {offset: 2, limit: 2, total: 3}},
+          meta: { pagination: { offset: 2, limit: 2, total: 3 } },
         },
       );
       const hosts = new HostsClient(http);
 
       const ids: string[] = [];
-      for await (const id of hosts.searchAll({limit: 2})) {
+      for await (const id of hosts.searchAll({ limit: 2 })) {
         ids.push(id);
       }
 
@@ -99,7 +99,7 @@ describe('HostsClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/devices/entities/devices/v2',
-        body: {ids: ['abc123']},
+        body: { ids: ['abc123'] },
       });
       expect(host.deviceId).toBe(deviceDetailsFixture.resources[0].device_id);
       expect(host.hostname).toBe(deviceDetailsFixture.resources[0].hostname);
@@ -110,7 +110,7 @@ describe('HostsClient', () => {
 
   describe('searchWithDetails', () => {
     it('returns an empty array without hydrating when search finds no hosts', async () => {
-      const http = fakeHttpClient({resources: [], errors: [], meta: {}});
+      const http = fakeHttpClient({ resources: [], errors: [], meta: {} });
       const hosts = new HostsClient(http);
 
       const result = await hosts.searchWithDetails();
@@ -135,13 +135,13 @@ describe('HostsClient', () => {
       const http = fakeHttpClient(undefined);
       const hosts = new HostsClient(http);
 
-      await hosts.performAction({ids: ['abc123'], action: 'contain'});
+      await hosts.performAction({ ids: ['abc123'], action: 'contain' });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/devices/entities/devices-actions/v2',
-        query: {action_name: 'contain'},
-        body: {ids: ['abc123']},
+        query: { action_name: 'contain' },
+        body: { ids: ['abc123'] },
       });
     });
   });
@@ -160,7 +160,7 @@ describe('HostsClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'PATCH',
         path: '/devices/entities/devices/tags/v1',
-        body: {action: 'add', device_ids: ['abc123'], tags: ['team/finance']},
+        body: { action: 'add', device_ids: ['abc123'], tags: ['team/finance'] },
       });
     });
   });

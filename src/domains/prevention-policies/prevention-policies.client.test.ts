@@ -1,11 +1,11 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {PreventionPoliciesClient} from './prevention-policies.client';
-import type {HttpClient} from '../../core/http-client';
+import { describe, it, expect, mock } from 'bun:test';
+import { PreventionPoliciesClient } from './prevention-policies.client';
+import type { HttpClient } from '../../core/http-client';
 import searchFixture from './__fixtures__/search-policies-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('PreventionPoliciesClient', () => {
@@ -14,7 +14,7 @@ describe('PreventionPoliciesClient', () => {
       const http = fakeHttpClient({
         resources: ['policy1'],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const policies = new PreventionPoliciesClient(http);
 
@@ -41,7 +41,9 @@ describe('PreventionPoliciesClient', () => {
       const http = fakeHttpClient(searchFixture);
       const policies = new PreventionPoliciesClient(http);
 
-      const result = await policies.search({filter: "platform_name:'Windows'"});
+      const result = await policies.search({
+        filter: "platform_name:'Windows'",
+      });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -56,7 +58,7 @@ describe('PreventionPoliciesClient', () => {
       expect(result.policies[0].name).toBe('Default Windows Policy');
       expect(result.policies[0].platformName).toBe('Windows');
       expect(result.policies[0].groups).toEqual([
-        {id: 'group1', name: 'Finance Laptops'},
+        { id: 'group1', name: 'Finance Laptops' },
       ]);
       expect(result.pagination).toEqual(searchFixture.meta.pagination);
     });
@@ -68,20 +70,24 @@ describe('PreventionPoliciesClient', () => {
         {
           resources: [searchFixture.resources[0]],
           errors: [],
-          meta: {pagination: {offset: 0, limit: 1, total: 2}},
+          meta: { pagination: { offset: 0, limit: 1, total: 2 } },
         },
         {
           resources: [
-            {...searchFixture.resources[0], id: 'policy2', name: 'Mac Policy'},
+            {
+              ...searchFixture.resources[0],
+              id: 'policy2',
+              name: 'Mac Policy',
+            },
           ],
           errors: [],
-          meta: {pagination: {offset: 1, limit: 1, total: 2}},
+          meta: { pagination: { offset: 1, limit: 1, total: 2 } },
         },
       );
       const policies = new PreventionPoliciesClient(http);
 
       const names: string[] = [];
-      for await (const policy of policies.searchAll({limit: 1})) {
+      for await (const policy of policies.searchAll({ limit: 1 })) {
         names.push(policy.name);
       }
 
@@ -99,7 +105,7 @@ describe('PreventionPoliciesClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/policy/entities/prevention/v1',
-        query: {ids: ['policy1']},
+        query: { ids: ['policy1'] },
       });
       expect(policy.id).toBe('policy1');
     });
@@ -141,7 +147,7 @@ describe('PreventionPoliciesClient', () => {
 
       await policies.update({
         id: 'policy1',
-        settings: [{id: 'ProcessProtection', value: {enabled: false}}],
+        settings: [{ id: 'ProcessProtection', value: { enabled: false } }],
       });
 
       expect(http.request).toHaveBeenCalledWith({
@@ -153,7 +159,9 @@ describe('PreventionPoliciesClient', () => {
               id: 'policy1',
               name: undefined,
               description: undefined,
-              settings: [{id: 'ProcessProtection', value: {enabled: false}}],
+              settings: [
+                { id: 'ProcessProtection', value: { enabled: false } },
+              ],
             },
           ],
         },
@@ -171,7 +179,7 @@ describe('PreventionPoliciesClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'DELETE',
         path: '/policy/entities/prevention/v1',
-        query: {ids: ['policy1']},
+        query: { ids: ['policy1'] },
       });
     });
   });
@@ -190,10 +198,10 @@ describe('PreventionPoliciesClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/policy/entities/prevention-actions/v1',
-        query: {action_name: 'add-host-group'},
+        query: { action_name: 'add-host-group' },
         body: {
           ids: ['policy1'],
-          action_parameters: [{name: 'group_id', value: 'group1'}],
+          action_parameters: [{ name: 'group_id', value: 'group1' }],
         },
       });
     });
@@ -202,13 +210,13 @@ describe('PreventionPoliciesClient', () => {
       const http = fakeHttpClient(undefined);
       const policies = new PreventionPoliciesClient(http);
 
-      await policies.performAction({ids: ['policy1'], action: 'enable'});
+      await policies.performAction({ ids: ['policy1'], action: 'enable' });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/policy/entities/prevention-actions/v1',
-        query: {action_name: 'enable'},
-        body: {ids: ['policy1'], action_parameters: undefined},
+        query: { action_name: 'enable' },
+        body: { ids: ['policy1'], action_parameters: undefined },
       });
     });
   });
@@ -226,7 +234,7 @@ describe('PreventionPoliciesClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/policy/entities/prevention-precedence/v1',
-        body: {ids: ['policy1', 'policy2'], platform_name: 'Windows'},
+        body: { ids: ['policy1', 'policy2'], platform_name: 'Windows' },
       });
     });
   });
@@ -236,11 +244,11 @@ describe('PreventionPoliciesClient', () => {
       const http = fakeHttpClient({
         resources: ['abc123'],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const policies = new PreventionPoliciesClient(http);
 
-      const result = await policies.queryMembers({policyId: 'policy1'});
+      const result = await policies.queryMembers({ policyId: 'policy1' });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -274,7 +282,7 @@ describe('PreventionPoliciesClient', () => {
       });
       const policies = new PreventionPoliciesClient(http);
 
-      const [host] = await policies.getCombinedMembers({policyId: 'policy1'});
+      const [host] = await policies.getCombinedMembers({ policyId: 'policy1' });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',

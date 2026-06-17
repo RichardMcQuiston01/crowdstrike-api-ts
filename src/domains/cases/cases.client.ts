@@ -1,8 +1,11 @@
-import type {HttpClient} from '../../core/http-client';
-import {paginateOffset, type OffsetPageFetcher} from '../../core/pagination';
-import type {CrowdStrikeEnvelope, OffsetPaginationMeta} from '../../core/types';
+import type { HttpClient } from '../../core/http-client';
+import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
+import type {
+  CrowdStrikeEnvelope,
+  OffsetPaginationMeta,
+} from '../../core/types';
 import * as requests from './cases.requests';
-import {mapRawCaseToDetails, type RawCase} from './cases.mapper';
+import { mapRawCaseToDetails, type RawCase } from './cases.mapper';
 import type {
   CaseSearchParams,
   CaseSearchResult,
@@ -33,10 +36,10 @@ export class CasesClient {
     params: Omit<CaseSearchParams, 'offset'> = {},
   ): AsyncGenerator<string> {
     const fetchPage: OffsetPageFetcher<string> = async (offset, limit) => {
-      const page = await this.search({...params, offset, limit});
-      return {resources: page.caseIds, pagination: page.pagination};
+      const page = await this.search({ ...params, offset, limit });
+      return { resources: page.caseIds, pagination: page.pagination };
     };
-    return paginateOffset(fetchPage, {pageSize: params.limit ?? 100});
+    return paginateOffset(fetchPage, { pageSize: params.limit ?? 100 });
   }
 
   async getDetails(ids: string[]): Promise<CaseDetails[]> {
@@ -49,7 +52,7 @@ export class CasesClient {
   async searchWithDetails(
     params: CaseSearchParams = {},
   ): Promise<CaseDetails[]> {
-    const {caseIds} = await this.search(params);
+    const { caseIds } = await this.search(params);
     if (caseIds.length === 0) {
       return [];
     }

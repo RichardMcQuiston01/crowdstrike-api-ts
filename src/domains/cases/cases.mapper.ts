@@ -1,4 +1,4 @@
-import type {CaseDetails} from './cases.types';
+import type { CaseDetails } from './cases.types';
 
 /** Raw wire shape of a CrowdStrike case (SdkCaseVM) - scalar fields only. */
 export interface RawCase {

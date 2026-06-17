@@ -1,11 +1,11 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {UsersClient} from './users.client';
-import type {HttpClient} from '../../core/http-client';
+import { describe, it, expect, mock } from 'bun:test';
+import { UsersClient } from './users.client';
+import type { HttpClient } from '../../core/http-client';
 import usersFixture from './__fixtures__/get-users-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('UsersClient', () => {
@@ -14,11 +14,11 @@ describe('UsersClient', () => {
       const http = fakeHttpClient({
         resources: ['user-uuid-1'],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const users = new UsersClient(http);
 
-      const result = await users.searchIds({filter: "status:'active'"});
+      const result = await users.searchIds({ filter: "status:'active'" });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -44,7 +44,7 @@ describe('UsersClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/user-management/entities/users/GET/v1',
-        body: {ids: ['user-uuid-1']},
+        body: { ids: ['user-uuid-1'] },
       });
       expect(result[0].uid).toBe('jdoe@example.com');
       expect(result[0].firstName).toBe('Jane');
@@ -66,7 +66,7 @@ describe('UsersClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/user-management/entities/users/v1',
-        query: {validate_only: undefined},
+        query: { validate_only: undefined },
         body: {
           cid: 'cid-001',
           first_name: 'Jane',
@@ -84,13 +84,13 @@ describe('UsersClient', () => {
       const http = fakeHttpClient(usersFixture);
       const users = new UsersClient(http);
 
-      await users.update({userUuid: 'user-uuid-1', lastName: 'Smith'});
+      await users.update({ userUuid: 'user-uuid-1', lastName: 'Smith' });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'PATCH',
         path: '/user-management/entities/users/v1',
-        query: {user_uuid: 'user-uuid-1'},
-        body: {first_name: undefined, last_name: 'Smith'},
+        query: { user_uuid: 'user-uuid-1' },
+        body: { first_name: undefined, last_name: 'Smith' },
       });
     });
   });
@@ -105,7 +105,7 @@ describe('UsersClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'DELETE',
         path: '/user-management/entities/users/v1',
-        query: {user_uuid: 'user-uuid-1'},
+        query: { user_uuid: 'user-uuid-1' },
       });
     });
   });
@@ -131,8 +131,8 @@ describe('UsersClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/user-management/entities/roles/GET/v2',
-        query: {cid: 'cid-001'},
-        body: {ids: ['role1']},
+        query: { cid: 'cid-001' },
+        body: { ids: ['role1'] },
       });
       expect(role.displayName).toBe('Falcon Administrator');
       expect(role.isGlobal).toBe(true);
@@ -148,12 +148,12 @@ describe('UsersClient', () => {
       });
       const users = new UsersClient(http);
 
-      const result = await users.queryAvailableRoleIds({cid: 'cid-001'});
+      const result = await users.queryAvailableRoleIds({ cid: 'cid-001' });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/user-management/queries/roles/v1',
-        query: {cid: 'cid-001', user_uuid: undefined, action: undefined},
+        query: { cid: 'cid-001', user_uuid: undefined, action: undefined },
       });
       expect(result).toEqual(['role1', 'role2']);
     });
@@ -174,7 +174,7 @@ describe('UsersClient', () => {
         path: '/user-management/entities/user-actions/v1',
         body: {
           ids: ['user-uuid-1'],
-          action: {action_name: 'reset_password'},
+          action: { action_name: 'reset_password' },
         },
       });
     });
@@ -218,7 +218,7 @@ describe('UsersClient', () => {
           },
         ],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const users = new UsersClient(http);
 
@@ -240,7 +240,7 @@ describe('UsersClient', () => {
         },
       });
       expect(result.roles[0].roleName).toBe('Falcon Administrator');
-      expect(result.pagination).toEqual({offset: 0, limit: 100, total: 1});
+      expect(result.pagination).toEqual({ offset: 0, limit: 100, total: 1 });
     });
   });
 });

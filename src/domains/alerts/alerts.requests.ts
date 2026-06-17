@@ -1,4 +1,4 @@
-import type {RequestOptions} from '../../core/http-client';
+import type { RequestOptions } from '../../core/http-client';
 import type {
   AlertSearchParams,
   CombinedAlertSearchParams,
@@ -22,11 +22,11 @@ export function buildSearchRequest(params: AlertSearchParams): RequestOptions {
 
 export function buildGetDetailsRequest(
   compositeIds: string[],
-): RequestOptions<{composite_ids: string[]}> {
+): RequestOptions<{ composite_ids: string[] }> {
   return {
     method: 'POST',
     path: '/alerts/entities/alerts/v2',
-    body: {composite_ids: compositeIds},
+    body: { composite_ids: compositeIds },
   };
 }
 
@@ -53,7 +53,7 @@ export function buildCombinedSearchRequest(
 
 export function buildUpdateRequest(params: UpdateAlertParams): RequestOptions<{
   composite_ids: string[];
-  action_parameters: Array<{name: string; value: string}>;
+  action_parameters: Array<{ name: string; value: string }>;
 }> {
   return {
     method: 'PATCH',

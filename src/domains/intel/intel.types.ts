@@ -10,12 +10,12 @@ export interface IntelIndicatorSearchParams {
 
 export interface IntelIndicatorSearchResult {
   indicators: IntelIndicatorDetails[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface IntelIndicatorIdSearchResult {
   ids: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface IntelIndicatorDetails {

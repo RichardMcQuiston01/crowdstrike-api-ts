@@ -1,4 +1,4 @@
-import type {IocDetails} from './ioc.types';
+import type { IocDetails } from './ioc.types';
 
 /** Raw wire shape of a custom IOC indicator (ApiIndicatorV1). */
 export interface RawIoc {

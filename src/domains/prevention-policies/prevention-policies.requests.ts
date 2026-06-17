@@ -1,4 +1,4 @@
-import type {RequestOptions} from '../../core/http-client';
+import type { RequestOptions } from '../../core/http-client';
 import type {
   PreventionPolicySearchParams,
   CreatePreventionPolicyParams,
@@ -41,7 +41,7 @@ export function buildGetDetailsRequest(ids: string[]): RequestOptions {
   return {
     method: 'GET',
     path: '/policy/entities/prevention/v1',
-    query: {ids},
+    query: { ids },
   };
 }
 
@@ -88,24 +88,24 @@ export function buildDeleteRequest(ids: string[]): RequestOptions {
   return {
     method: 'DELETE',
     path: '/policy/entities/prevention/v1',
-    query: {ids},
+    query: { ids },
   };
 }
 
 export function buildPerformActionRequest(
   params: PerformPreventionPolicyActionParams,
 ): RequestOptions {
-  const actionParameters: Array<{name: string; value: string}> = [];
+  const actionParameters: Array<{ name: string; value: string }> = [];
   if (params.groupId !== undefined) {
-    actionParameters.push({name: 'group_id', value: params.groupId});
+    actionParameters.push({ name: 'group_id', value: params.groupId });
   }
   if (params.ruleGroupId !== undefined) {
-    actionParameters.push({name: 'rule_group_id', value: params.ruleGroupId});
+    actionParameters.push({ name: 'rule_group_id', value: params.ruleGroupId });
   }
   return {
     method: 'POST',
     path: '/policy/entities/prevention-actions/v1',
-    query: {action_name: params.action},
+    query: { action_name: params.action },
     body: {
       ids: params.ids,
       action_parameters:

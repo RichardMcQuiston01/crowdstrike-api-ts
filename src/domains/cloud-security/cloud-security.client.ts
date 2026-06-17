@@ -1,6 +1,9 @@
-import type {HttpClient} from '../../core/http-client';
-import {paginateOffset, type OffsetPageFetcher} from '../../core/pagination';
-import type {CrowdStrikeEnvelope, OffsetPaginationMeta} from '../../core/types';
+import type { HttpClient } from '../../core/http-client';
+import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
+import type {
+  CrowdStrikeEnvelope,
+  OffsetPaginationMeta,
+} from '../../core/types';
 import * as requests from './cloud-security.requests';
 import {
   mapRawCloudResource,
@@ -23,7 +26,7 @@ function toPagination(raw: CrowdStrikeEnvelope<unknown>): {
 } {
   const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
   return (
-    pagination ?? {offset: 0, limit: 0, total: (raw.resources ?? []).length}
+    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
   );
 }
 
@@ -43,7 +46,7 @@ export class CloudSecurityClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchIdsRequest(params),
     );
-    return {ids: raw.resources, pagination: toPagination(raw)};
+    return { ids: raw.resources, pagination: toPagination(raw) };
   }
 
   /** Async-iterates every matching resource ID across all pages. */
@@ -51,10 +54,10 @@ export class CloudSecurityClient {
     params: Omit<CloudResourceSearchParams, 'offset'> = {},
   ): AsyncGenerator<string> {
     const fetchPage: OffsetPageFetcher<string> = async (offset, limit) => {
-      const page = await this.searchIds({...params, offset, limit});
-      return {resources: page.ids, pagination: page.pagination};
+      const page = await this.searchIds({ ...params, offset, limit });
+      return { resources: page.ids, pagination: page.pagination };
     };
-    return paginateOffset(fetchPage, {pageSize: params.limit ?? 100});
+    return paginateOffset(fetchPage, { pageSize: params.limit ?? 100 });
   }
 
   /** Hydrates up to 100 resources at a time by ID. */

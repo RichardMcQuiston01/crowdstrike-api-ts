@@ -1,13 +1,13 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {HostGroupsClient} from './host-groups.client';
-import type {HttpClient} from '../../core/http-client';
+import { describe, it, expect, mock } from 'bun:test';
+import { HostGroupsClient } from './host-groups.client';
+import type { HttpClient } from '../../core/http-client';
 import queryGroupsFixture from './__fixtures__/query-host-groups-response.json';
 import groupDetailsFixture from './__fixtures__/host-group-details-response.json';
 import combinedMembersFixture from './__fixtures__/combined-group-members-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('HostGroupsClient', () => {
@@ -16,7 +16,7 @@ describe('HostGroupsClient', () => {
       const http = fakeHttpClient(queryGroupsFixture);
       const groups = new HostGroupsClient(http);
 
-      const result = await groups.search({filter: "name:'Finance*'"});
+      const result = await groups.search({ filter: "name:'Finance*'" });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -43,7 +43,7 @@ describe('HostGroupsClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/devices/entities/host-groups/v1',
-        query: {ids: ['group1']},
+        query: { ids: ['group1'] },
       });
       expect(group.id).toBe('group1');
       expect(group.name).toBe('Finance Laptops');
@@ -84,7 +84,7 @@ describe('HostGroupsClient', () => {
       const http = fakeHttpClient(groupDetailsFixture);
       const groups = new HostGroupsClient(http);
 
-      await groups.update({id: 'group1', description: 'Updated description'});
+      await groups.update({ id: 'group1', description: 'Updated description' });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'PATCH',
@@ -113,7 +113,7 @@ describe('HostGroupsClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'DELETE',
         path: '/devices/entities/host-groups/v1',
-        query: {ids: ['group1']},
+        query: { ids: ['group1'] },
       });
     });
   });
@@ -123,11 +123,11 @@ describe('HostGroupsClient', () => {
       const http = fakeHttpClient({
         resources: ['abc123'],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const groups = new HostGroupsClient(http);
 
-      const result = await groups.queryMembers({groupId: 'group1'});
+      const result = await groups.queryMembers({ groupId: 'group1' });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -149,7 +149,7 @@ describe('HostGroupsClient', () => {
       const http = fakeHttpClient(combinedMembersFixture);
       const groups = new HostGroupsClient(http);
 
-      const [host] = await groups.getCombinedMembers({groupId: 'group1'});
+      const [host] = await groups.getCombinedMembers({ groupId: 'group1' });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -181,10 +181,10 @@ describe('HostGroupsClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/devices/entities/host-group-actions/v1',
-        query: {action_name: 'add-hosts', disable_hostname_check: undefined},
+        query: { action_name: 'add-hosts', disable_hostname_check: undefined },
         body: {
           ids: ['group1'],
-          action_parameters: [{name: 'filter', value: "device_id:'abc123'"}],
+          action_parameters: [{ name: 'filter', value: "device_id:'abc123'" }],
         },
       });
     });

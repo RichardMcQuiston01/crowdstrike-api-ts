@@ -1,5 +1,5 @@
-import type {RequestOptions} from '../../core/http-client';
-import type {SensorInstallerSearchParams} from './sensor-download.types';
+import type { RequestOptions } from '../../core/http-client';
+import type { SensorInstallerSearchParams } from './sensor-download.types';
 
 function buildSearchQuery(params: SensorInstallerSearchParams) {
   return {
@@ -34,7 +34,7 @@ export function buildGetDetailsRequest(ids: string[]): RequestOptions {
   return {
     method: 'GET',
     path: '/sensors/entities/installers/v3',
-    query: {ids},
+    query: { ids },
   };
 }
 
@@ -49,7 +49,7 @@ export function buildDownloadRequest(sha256: string): RequestOptions {
   return {
     method: 'GET',
     path: '/sensors/entities/download-installer/v3',
-    query: {id: sha256},
+    query: { id: sha256 },
     responseType: 'blob',
   };
 }

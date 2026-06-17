@@ -1,11 +1,11 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {IocClient} from './ioc.client';
-import type {HttpClient} from '../../core/http-client';
+import { describe, it, expect, mock } from 'bun:test';
+import { IocClient } from './ioc.client';
+import type { HttpClient } from '../../core/http-client';
 import searchFixture from './__fixtures__/search-combined-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('IocClient', () => {
@@ -14,11 +14,11 @@ describe('IocClient', () => {
       const http = fakeHttpClient({
         resources: ['ioc_1'],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const ioc = new IocClient(http);
 
-      const result = await ioc.search({filter: "type:'domain'"});
+      const result = await ioc.search({ filter: "type:'domain'" });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -41,7 +41,7 @@ describe('IocClient', () => {
       const http = fakeHttpClient(searchFixture);
       const ioc = new IocClient(http);
 
-      const result = await ioc.searchCombined({filter: "type:'domain'"});
+      const result = await ioc.searchCombined({ filter: "type:'domain'" });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -67,7 +67,7 @@ describe('IocClient', () => {
         {
           resources: [searchFixture.resources[0]],
           errors: [],
-          meta: {pagination: {offset: 0, limit: 1, total: 2}},
+          meta: { pagination: { offset: 0, limit: 1, total: 2 } },
         },
         {
           resources: [
@@ -78,13 +78,13 @@ describe('IocClient', () => {
             },
           ],
           errors: [],
-          meta: {pagination: {offset: 1, limit: 1, total: 2}},
+          meta: { pagination: { offset: 1, limit: 1, total: 2 } },
         },
       );
       const ioc = new IocClient(http);
 
       const values: string[] = [];
-      for await (const item of ioc.searchAll({limit: 1})) {
+      for await (const item of ioc.searchAll({ limit: 1 })) {
         values.push(item.value ?? '');
       }
 
@@ -102,7 +102,7 @@ describe('IocClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/iocs/entities/indicators/v1',
-        query: {ids: ['ioc_1']},
+        query: { ids: ['ioc_1'] },
       });
       expect(result[0].id).toBe('4f8c1e2a9b7d4d6e8f0a1b2c3d4e5f60');
     });
@@ -131,7 +131,7 @@ describe('IocClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/iocs/entities/indicators/v1',
-        query: {retrodetects: true, ignore_warnings: undefined},
+        query: { retrodetects: true, ignore_warnings: undefined },
         body: {
           comment: 'adding a new IOC',
           indicators: [
@@ -158,10 +158,10 @@ describe('IocClient', () => {
 
   describe('delete', () => {
     it('sends a DELETE with ids and comment as query params', async () => {
-      const http = fakeHttpClient({resources: [], errors: [], meta: {}});
+      const http = fakeHttpClient({ resources: [], errors: [], meta: {} });
       const ioc = new IocClient(http);
 
-      await ioc.delete({ids: ['ioc_1'], comment: 'no longer needed'});
+      await ioc.delete({ ids: ['ioc_1'], comment: 'no longer needed' });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'DELETE',

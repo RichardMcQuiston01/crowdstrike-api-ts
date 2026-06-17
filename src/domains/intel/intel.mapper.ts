@@ -1,4 +1,4 @@
-import type {IntelIndicatorDetails} from './intel.types';
+import type { IntelIndicatorDetails } from './intel.types';
 
 /** Raw wire shape of a threat intel indicator (DomainPublicIndicatorV3). */
 export interface RawIntelIndicator {

@@ -1,13 +1,13 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {CasesClient} from './cases.client';
-import type {HttpClient} from '../../core/http-client';
-import {CrowdStrikeApiError} from '../../core/errors';
+import { describe, it, expect, mock } from 'bun:test';
+import { CasesClient } from './cases.client';
+import type { HttpClient } from '../../core/http-client';
+import { CrowdStrikeApiError } from '../../core/errors';
 import queryCasesFixture from './__fixtures__/query-cases-response.json';
 import caseDetailsFixture from './__fixtures__/case-details-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('CasesClient', () => {
@@ -16,7 +16,7 @@ describe('CasesClient', () => {
       const http = fakeHttpClient(queryCasesFixture);
       const cases = new CasesClient(http);
 
-      const result = await cases.search({filter: "status:'open'"});
+      const result = await cases.search({ filter: "status:'open'" });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -38,7 +38,7 @@ describe('CasesClient', () => {
         request: mock(async () => {
           throw new CrowdStrikeApiError({
             status: 403,
-            errors: [{code: 403, message: 'denied'}],
+            errors: [{ code: 403, message: 'denied' }],
             requestPath: '/cases/queries/cases/v1',
           });
         }),
@@ -55,18 +55,18 @@ describe('CasesClient', () => {
         {
           resources: ['a', 'b'],
           errors: [],
-          meta: {pagination: {offset: 0, limit: 2, total: 3}},
+          meta: { pagination: { offset: 0, limit: 2, total: 3 } },
         },
         {
           resources: ['c'],
           errors: [],
-          meta: {pagination: {offset: 2, limit: 2, total: 3}},
+          meta: { pagination: { offset: 2, limit: 2, total: 3 } },
         },
       );
       const cases = new CasesClient(http);
 
       const ids: string[] = [];
-      for await (const id of cases.searchAll({limit: 2})) {
+      for await (const id of cases.searchAll({ limit: 2 })) {
         ids.push(id);
       }
 
@@ -84,7 +84,7 @@ describe('CasesClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/cases/entities/cases/v2',
-        body: {ids: ['case-1']},
+        body: { ids: ['case-1'] },
       });
       expect(caseDetails.id).toBe('case-1');
       expect(caseDetails.referenceId).toBe('CS-1001');
@@ -95,7 +95,7 @@ describe('CasesClient', () => {
 
   describe('searchWithDetails', () => {
     it('returns an empty array without hydrating when search finds no cases', async () => {
-      const http = fakeHttpClient({resources: [], errors: [], meta: {}});
+      const http = fakeHttpClient({ resources: [], errors: [], meta: {} });
       const cases = new CasesClient(http);
 
       const result = await cases.searchWithDetails();
@@ -118,7 +118,7 @@ describe('CasesClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/cases/entities/case-tags/v1',
-        body: {id: 'case-1', tags: ['priority/high']},
+        body: { id: 'case-1', tags: ['priority/high'] },
       });
       expect(result.id).toBe('case-1');
     });
@@ -129,12 +129,12 @@ describe('CasesClient', () => {
       const http = fakeHttpClient(caseDetailsFixture);
       const cases = new CasesClient(http);
 
-      await cases.removeTags({id: 'case-1', tags: ['priority/high']});
+      await cases.removeTags({ id: 'case-1', tags: ['priority/high'] });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'DELETE',
         path: '/cases/entities/case-tags/v1',
-        query: {id: 'case-1', tag: ['priority/high']},
+        query: { id: 'case-1', tag: ['priority/high'] },
       });
     });
   });

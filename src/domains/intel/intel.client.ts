@@ -1,8 +1,11 @@
-import type {HttpClient} from '../../core/http-client';
-import {paginateOffset, type OffsetPageFetcher} from '../../core/pagination';
-import type {CrowdStrikeEnvelope, OffsetPaginationMeta} from '../../core/types';
+import type { HttpClient } from '../../core/http-client';
+import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
+import type {
+  CrowdStrikeEnvelope,
+  OffsetPaginationMeta,
+} from '../../core/types';
 import * as requests from './intel.requests';
-import {mapRawIntelIndicator, type RawIntelIndicator} from './intel.mapper';
+import { mapRawIntelIndicator, type RawIntelIndicator } from './intel.mapper';
 import type {
   IntelIndicatorSearchParams,
   IntelIndicatorSearchResult,
@@ -17,7 +20,7 @@ function toPagination(raw: CrowdStrikeEnvelope<unknown>): {
 } {
   const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
   return (
-    pagination ?? {offset: 0, limit: 0, total: (raw.resources ?? []).length}
+    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
   );
 }
 
@@ -35,7 +38,7 @@ export class IntelClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchIdsRequest(params),
     );
-    return {ids: raw.resources, pagination: toPagination(raw)};
+    return { ids: raw.resources, pagination: toPagination(raw) };
   }
 
   /** Returns a single page of fully hydrated indicator records. */
@@ -59,10 +62,10 @@ export class IntelClient {
       offset,
       limit,
     ) => {
-      const page = await this.search({...params, offset, limit});
-      return {resources: page.indicators, pagination: page.pagination};
+      const page = await this.search({ ...params, offset, limit });
+      return { resources: page.indicators, pagination: page.pagination };
     };
-    return paginateOffset(fetchPage, {pageSize: params.limit ?? 100});
+    return paginateOffset(fetchPage, { pageSize: params.limit ?? 100 });
   }
 
   async getDetails(ids: string[]): Promise<IntelIndicatorDetails[]> {

@@ -1,12 +1,12 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {CloudSecurityClient} from './cloud-security.client';
-import type {HttpClient} from '../../core/http-client';
+import { describe, it, expect, mock } from 'bun:test';
+import { CloudSecurityClient } from './cloud-security.client';
+import type { HttpClient } from '../../core/http-client';
 import searchIdsFixture from './__fixtures__/search-ids-response.json';
 import getResourcesFixture from './__fixtures__/get-resources-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('CloudSecurityClient', () => {
@@ -15,7 +15,7 @@ describe('CloudSecurityClient', () => {
       const http = fakeHttpClient(searchIdsFixture);
       const cloud = new CloudSecurityClient(http);
 
-      const result = await cloud.searchIds({filter: "cloud_provider:'aws'"});
+      const result = await cloud.searchIds({ filter: "cloud_provider:'aws'" });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -38,18 +38,18 @@ describe('CloudSecurityClient', () => {
         {
           resources: ['res_1'],
           errors: [],
-          meta: {pagination: {offset: 0, limit: 1, total: 2}},
+          meta: { pagination: { offset: 0, limit: 1, total: 2 } },
         },
         {
           resources: ['res_2'],
           errors: [],
-          meta: {pagination: {offset: 1, limit: 1, total: 2}},
+          meta: { pagination: { offset: 1, limit: 1, total: 2 } },
         },
       );
       const cloud = new CloudSecurityClient(http);
 
       const ids: string[] = [];
-      for await (const id of cloud.searchAllIds({limit: 1})) {
+      for await (const id of cloud.searchAllIds({ limit: 1 })) {
         ids.push(id);
       }
 
@@ -69,7 +69,7 @@ describe('CloudSecurityClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/cloud-security-assets/entities/resources/v1',
-        query: {ids: ['res_9f1a2b3c4d5e6f708192a3b4c5d6e7f8']},
+        query: { ids: ['res_9f1a2b3c4d5e6f708192a3b4c5d6e7f8'] },
       });
       expect(result[0].resourceName).toBe('web-server-01');
       expect(result[0].cloudProvider).toBe('aws');
@@ -83,11 +83,11 @@ describe('CloudSecurityClient', () => {
           {
             crn: 'crn:aws:ec2:us-east-1:111122223333:instance/i-0a1b2c3d4e5f60718',
             finding_type: 'vulnerable-package',
-            findings: [{id: 'finding_1'}],
+            findings: [{ id: 'finding_1' }],
           },
         ],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const cloud = new CloudSecurityClient(http);
 

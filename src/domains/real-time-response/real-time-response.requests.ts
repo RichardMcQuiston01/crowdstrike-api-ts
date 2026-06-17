@@ -1,4 +1,4 @@
-import type {RequestOptions} from '../../core/http-client';
+import type { RequestOptions } from '../../core/http-client';
 import type {
   InitSessionParams,
   ListSessionsParams,
@@ -24,7 +24,7 @@ export function buildDeleteSessionRequest(sessionId: string): RequestOptions {
   return {
     method: 'DELETE',
     path: '/real-time-response/entities/sessions/v1',
-    query: {session_id: sessionId},
+    query: { session_id: sessionId },
   };
 }
 

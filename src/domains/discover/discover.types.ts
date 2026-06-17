@@ -7,7 +7,7 @@ export interface DiscoverSearchParams {
 
 export interface DiscoverIdSearchResult {
   ids: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface DiscoverCombinedSearchParams {

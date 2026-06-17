@@ -4,7 +4,7 @@ export type OffsetPageFetcher<T> = (
   limit: number,
 ) => Promise<{
   resources: T[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }>;
 
 /** Fetches one page of a cursor/after-token based list endpoint. */
@@ -13,7 +13,7 @@ export type CursorPageFetcher<T> = (
   limit: number,
 ) => Promise<{
   resources: T[];
-  pagination: {after?: string; limit: number};
+  pagination: { after?: string; limit: number };
 }>;
 
 const DEFAULT_PAGE_SIZE = 100;
@@ -21,7 +21,7 @@ const DEFAULT_PAGE_SIZE = 100;
 /** Async-iterates every item of an offset/limit based list endpoint, page by page. */
 export async function* paginateOffset<T>(
   fetchPage: OffsetPageFetcher<T>,
-  opts: {pageSize?: number; startOffset?: number} = {},
+  opts: { pageSize?: number; startOffset?: number } = {},
 ): AsyncGenerator<T> {
   const limit = opts.pageSize ?? DEFAULT_PAGE_SIZE;
   let offset = opts.startOffset ?? 0;
@@ -43,7 +43,7 @@ export async function* paginateOffset<T>(
 /** Async-iterates every item of a cursor/after-token based list endpoint, page by page. */
 export async function* paginateCursor<T>(
   fetchPage: CursorPageFetcher<T>,
-  opts: {pageSize?: number} = {},
+  opts: { pageSize?: number } = {},
 ): AsyncGenerator<T> {
   const limit = opts.pageSize ?? DEFAULT_PAGE_SIZE;
   let after: string | undefined;

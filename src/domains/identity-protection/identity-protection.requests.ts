@@ -1,5 +1,5 @@
-import type {RequestOptions} from '../../core/http-client';
-import type {IdentitySensorSearchParams} from './identity-protection.types';
+import type { RequestOptions } from '../../core/http-client';
+import type { IdentitySensorSearchParams } from './identity-protection.types';
 
 export function buildSearchSensorIdsRequest(
   params: IdentitySensorSearchParams,
@@ -20,7 +20,7 @@ export function buildGetSensorDetailsRequest(ids: string[]): RequestOptions {
   return {
     method: 'POST',
     path: '/identity-protection/entities/devices/GET/v1',
-    body: {ids},
+    body: { ids },
   };
 }
 
@@ -28,6 +28,6 @@ export function buildGraphqlRequest(query: string): RequestOptions {
   return {
     method: 'POST',
     path: '/identity-protection/combined/graphql/v1',
-    body: {query},
+    body: { query },
   };
 }

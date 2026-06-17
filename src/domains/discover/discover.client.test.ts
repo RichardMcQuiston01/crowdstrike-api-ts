@@ -1,12 +1,12 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {DiscoverClient} from './discover.client';
-import type {HttpClient} from '../../core/http-client';
+import { describe, it, expect, mock } from 'bun:test';
+import { DiscoverClient } from './discover.client';
+import type { HttpClient } from '../../core/http-client';
 import searchHostsFixture from './__fixtures__/search-hosts-response.json';
 import getApplicationsFixture from './__fixtures__/get-applications-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('DiscoverClient', () => {
@@ -15,7 +15,7 @@ describe('DiscoverClient', () => {
       const http = fakeHttpClient({
         resources: ['host-1'],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const discover = new DiscoverClient(http);
 
@@ -34,7 +34,7 @@ describe('DiscoverClient', () => {
         },
       });
       expect(result.ids).toEqual(['host-1']);
-      expect(result.pagination).toEqual({offset: 0, limit: 100, total: 1});
+      expect(result.pagination).toEqual({ offset: 0, limit: 100, total: 1 });
     });
   });
 
@@ -43,7 +43,7 @@ describe('DiscoverClient', () => {
       const http = fakeHttpClient({
         resources: ['app-1'],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const discover = new DiscoverClient(http);
 
@@ -68,7 +68,7 @@ describe('DiscoverClient', () => {
       const http = fakeHttpClient({
         resources: ['account-1'],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const discover = new DiscoverClient(http);
 
@@ -93,7 +93,7 @@ describe('DiscoverClient', () => {
       const http = fakeHttpClient({
         resources: ['login-1'],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const discover = new DiscoverClient(http);
 
@@ -123,7 +123,7 @@ describe('DiscoverClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/discover/entities/hosts/v1',
-        query: {ids: ['host-1']},
+        query: { ids: ['host-1'] },
       });
       expect(host.hostname).toBe('WIN-LAPTOP-01');
       expect(host.platformName).toBe('Windows');
@@ -140,7 +140,7 @@ describe('DiscoverClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/discover/entities/applications/v1',
-        query: {ids: ['app-1']},
+        query: { ids: ['app-1'] },
       });
       expect(app.name).toBe('7-Zip');
       expect(app.vendor).toBe('Igor Pavlov');
@@ -168,7 +168,7 @@ describe('DiscoverClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/discover/entities/accounts/v1',
-        query: {ids: ['account-1']},
+        query: { ids: ['account-1'] },
       });
       expect(account.accountName).toBe('jdoe');
       expect(account.accountType).toBe('local');
@@ -196,7 +196,7 @@ describe('DiscoverClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/discover/entities/logins/v1',
-        query: {ids: ['login-1']},
+        query: { ids: ['login-1'] },
       });
       expect(login.accountName).toBe('jdoe');
       expect(login.loginType).toBe('interactive');
@@ -236,9 +236,9 @@ describe('DiscoverClient', () => {
   describe('searchAllHosts', () => {
     it('pages through every host using the after cursor', async () => {
       const http = fakeHttpClient(searchHostsFixture, {
-        resources: [{...searchHostsFixture.resources[0], id: 'host-2'}],
+        resources: [{ ...searchHostsFixture.resources[0], id: 'host-2' }],
         errors: [],
-        meta: {pagination: {limit: 1, total: 2}},
+        meta: { pagination: { limit: 1, total: 2 } },
       });
       const discover = new DiscoverClient(http);
 
@@ -297,7 +297,7 @@ describe('DiscoverClient', () => {
         },
       });
       expect(result.applications[0].name).toBe('7-Zip');
-      expect(result.pagination).toEqual({limit: 100, total: 1});
+      expect(result.pagination).toEqual({ limit: 100, total: 1 });
     });
   });
 
@@ -307,12 +307,12 @@ describe('DiscoverClient', () => {
         {
           resources: [getApplicationsFixture.resources[0]],
           errors: [],
-          meta: {pagination: {after: 'cursor-2', limit: 1, total: 2}},
+          meta: { pagination: { after: 'cursor-2', limit: 1, total: 2 } },
         },
         {
-          resources: [{...getApplicationsFixture.resources[0], id: 'app-2'}],
+          resources: [{ ...getApplicationsFixture.resources[0], id: 'app-2' }],
           errors: [],
-          meta: {pagination: {limit: 1, total: 2}},
+          meta: { pagination: { limit: 1, total: 2 } },
         },
       );
       const discover = new DiscoverClient(http);

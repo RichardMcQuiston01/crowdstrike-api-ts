@@ -8,7 +8,7 @@ export interface HostSearchParams {
 
 export interface HostSearchResult {
   hostIds: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 /** Friendlier, camelCased shape of a CrowdStrike device entity. */

@@ -14,7 +14,7 @@ export interface RawRuleFieldValue {
   value: string;
   label?: string;
   final_value?: string;
-  values?: {label: string; value: string}[];
+  values?: { label: string; value: string }[];
   [key: string]: unknown;
 }
 
@@ -133,7 +133,7 @@ export interface RawPatternSeverity {
 export function mapRawPatternSeverity(
   raw: RawPatternSeverity,
 ): PatternSeverity {
-  return {name: raw.name, severity: raw.severity};
+  return { name: raw.name, severity: raw.severity };
 }
 
 /** Raw wire shape of a supported platform entry (DomainPlatform). */
@@ -144,7 +144,7 @@ export interface RawIoaPlatform {
 }
 
 export function mapRawIoaPlatform(raw: RawIoaPlatform): IoaPlatform {
-  return {id: raw.id, label: raw.label};
+  return { id: raw.id, label: raw.label };
 }
 
 /** Raw wire shape of a rule type definition (ApiRuleTypeV1). */

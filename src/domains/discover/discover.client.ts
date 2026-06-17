@@ -1,6 +1,9 @@
-import type {HttpClient} from '../../core/http-client';
-import {paginateCursor, type CursorPageFetcher} from '../../core/pagination';
-import type {CrowdStrikeEnvelope, OffsetPaginationMeta} from '../../core/types';
+import type { HttpClient } from '../../core/http-client';
+import { paginateCursor, type CursorPageFetcher } from '../../core/pagination';
+import type {
+  CrowdStrikeEnvelope,
+  OffsetPaginationMeta,
+} from '../../core/types';
 import * as requests from './discover.requests';
 import {
   mapRawDiscoverHost,
@@ -34,7 +37,7 @@ import type {
 interface DiscoverCombinedEnvelope<T> {
   resources: T[];
   errors?: unknown[];
-  meta?: {pagination?: {after?: string; limit: number; total: number}};
+  meta?: { pagination?: { after?: string; limit: number; total: number } };
 }
 
 function toIdPagination(raw: CrowdStrikeEnvelope<unknown>): {
@@ -44,7 +47,7 @@ function toIdPagination(raw: CrowdStrikeEnvelope<unknown>): {
 } {
   const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
   return (
-    pagination ?? {offset: 0, limit: 0, total: (raw.resources ?? []).length}
+    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
   );
 }
 
@@ -70,7 +73,7 @@ export class DiscoverClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryHostsRequest(params),
     );
-    return {ids: raw.resources, pagination: toIdPagination(raw)};
+    return { ids: raw.resources, pagination: toIdPagination(raw) };
   }
 
   async queryApplicationIds(
@@ -79,7 +82,7 @@ export class DiscoverClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryApplicationsRequest(params),
     );
-    return {ids: raw.resources, pagination: toIdPagination(raw)};
+    return { ids: raw.resources, pagination: toIdPagination(raw) };
   }
 
   async queryAccountIds(
@@ -88,7 +91,7 @@ export class DiscoverClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryAccountsRequest(params),
     );
-    return {ids: raw.resources, pagination: toIdPagination(raw)};
+    return { ids: raw.resources, pagination: toIdPagination(raw) };
   }
 
   async queryLoginIds(
@@ -97,7 +100,7 @@ export class DiscoverClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryLoginsRequest(params),
     );
-    return {ids: raw.resources, pagination: toIdPagination(raw)};
+    return { ids: raw.resources, pagination: toIdPagination(raw) };
   }
 
   async getHosts(ids: string[]): Promise<DiscoverHostDetails[]> {
@@ -151,13 +154,13 @@ export class DiscoverClient {
     ) => {
       const raw = await this.http.request<
         DiscoverCombinedEnvelope<RawDiscoverHost>
-      >(requests.buildCombinedHostsRequest({...params, limit}, after));
+      >(requests.buildCombinedHostsRequest({ ...params, limit }, after));
       return {
         resources: raw.resources.map(mapRawDiscoverHost),
         pagination: toCursorPagination(raw, limit),
       };
     };
-    return paginateCursor(fetchPage, {pageSize: params.limit ?? 100});
+    return paginateCursor(fetchPage, { pageSize: params.limit ?? 100 });
   }
 
   /** Returns a single page of fully hydrated applications matching the filter. */
@@ -183,12 +186,12 @@ export class DiscoverClient {
     ) => {
       const raw = await this.http.request<
         DiscoverCombinedEnvelope<RawDiscoverApplication>
-      >(requests.buildCombinedApplicationsRequest({...params, limit}, after));
+      >(requests.buildCombinedApplicationsRequest({ ...params, limit }, after));
       return {
         resources: raw.resources.map(mapRawDiscoverApplication),
         pagination: toCursorPagination(raw, limit),
       };
     };
-    return paginateCursor(fetchPage, {pageSize: params.limit ?? 100});
+    return paginateCursor(fetchPage, { pageSize: params.limit ?? 100 });
   }
 }

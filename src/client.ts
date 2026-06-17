@@ -1,24 +1,24 @@
-import {FalconRegion, type FalconClientConfig} from './config';
-import {OAuth2TokenManager} from './core/auth';
-import {HttpClient} from './core/http-client';
-import {Oauth2Client} from './domains/oauth2/oauth2.client';
-import {HostsClient} from './domains/hosts/hosts.client';
-import {HostGroupsClient} from './domains/host-groups/host-groups.client';
-import {CasesClient} from './domains/cases/cases.client';
-import {AlertsClient} from './domains/alerts/alerts.client';
-import {RealTimeResponseClient} from './domains/real-time-response/real-time-response.client';
-import {RealTimeResponseAdminClient} from './domains/real-time-response/real-time-response-admin.client';
-import {ContainerVulnerabilitiesClient} from './domains/container-vulnerabilities/container-vulnerabilities.client';
-import {IntelClient} from './domains/intel/intel.client';
-import {IocClient} from './domains/ioc/ioc.client';
-import {CloudSecurityClient} from './domains/cloud-security/cloud-security.client';
-import {IdentityProtectionClient} from './domains/identity-protection/identity-protection.client';
-import {SensorDownloadClient} from './domains/sensor-download/sensor-download.client';
-import {PreventionPoliciesClient} from './domains/prevention-policies/prevention-policies.client';
-import {UsersClient} from './domains/users/users.client';
-import {DiscoverClient} from './domains/discover/discover.client';
-import {CustomIoaClient} from './domains/custom-ioa/custom-ioa.client';
-import {CustomEndpoints} from './custom';
+import { FalconRegion, type FalconClientConfig } from './config';
+import { OAuth2TokenManager } from './core/auth';
+import { HttpClient } from './core/http-client';
+import { Oauth2Client } from './domains/oauth2/oauth2.client';
+import { HostsClient } from './domains/hosts/hosts.client';
+import { HostGroupsClient } from './domains/host-groups/host-groups.client';
+import { CasesClient } from './domains/cases/cases.client';
+import { AlertsClient } from './domains/alerts/alerts.client';
+import { RealTimeResponseClient } from './domains/real-time-response/real-time-response.client';
+import { RealTimeResponseAdminClient } from './domains/real-time-response/real-time-response-admin.client';
+import { ContainerVulnerabilitiesClient } from './domains/container-vulnerabilities/container-vulnerabilities.client';
+import { IntelClient } from './domains/intel/intel.client';
+import { IocClient } from './domains/ioc/ioc.client';
+import { CloudSecurityClient } from './domains/cloud-security/cloud-security.client';
+import { IdentityProtectionClient } from './domains/identity-protection/identity-protection.client';
+import { SensorDownloadClient } from './domains/sensor-download/sensor-download.client';
+import { PreventionPoliciesClient } from './domains/prevention-policies/prevention-policies.client';
+import { UsersClient } from './domains/users/users.client';
+import { DiscoverClient } from './domains/discover/discover.client';
+import { CustomIoaClient } from './domains/custom-ioa/custom-ioa.client';
+import { CustomEndpoints } from './custom';
 
 /**
  * Top-level entry point for the CrowdStrike Falcon API. Composes one shared,

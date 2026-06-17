@@ -1,4 +1,4 @@
-import type {RequestOptions} from '../../core/http-client';
+import type { RequestOptions } from '../../core/http-client';
 import type {
   DiscoverSearchParams,
   DiscoverCombinedSearchParams,
@@ -54,14 +54,14 @@ export function buildQueryLoginsRequest(
 }
 
 export function buildGetHostsRequest(ids: string[]): RequestOptions {
-  return {method: 'GET', path: '/discover/entities/hosts/v1', query: {ids}};
+  return { method: 'GET', path: '/discover/entities/hosts/v1', query: { ids } };
 }
 
 export function buildGetApplicationsRequest(ids: string[]): RequestOptions {
   return {
     method: 'GET',
     path: '/discover/entities/applications/v1',
-    query: {ids},
+    query: { ids },
   };
 }
 
@@ -69,12 +69,16 @@ export function buildGetAccountsRequest(ids: string[]): RequestOptions {
   return {
     method: 'GET',
     path: '/discover/entities/accounts/v1',
-    query: {ids},
+    query: { ids },
   };
 }
 
 export function buildGetLoginsRequest(ids: string[]): RequestOptions {
-  return {method: 'GET', path: '/discover/entities/logins/v1', query: {ids}};
+  return {
+    method: 'GET',
+    path: '/discover/entities/logins/v1',
+    query: { ids },
+  };
 }
 
 function buildCombinedQuery(

@@ -9,12 +9,12 @@ export interface IocSearchParams {
 
 export interface IocSearchResult {
   ids: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface IocCombinedSearchResult {
   iocs: IocDetails[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface IocDetails {

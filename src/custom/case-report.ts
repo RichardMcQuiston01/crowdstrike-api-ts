@@ -1,7 +1,7 @@
-import type {CasesClient} from '../domains/cases/cases.client';
-import type {AlertsClient} from '../domains/alerts/alerts.client';
-import type {CaseDetails} from '../domains/cases/cases.types';
-import type {AlertDetails} from '../domains/alerts/alerts.types';
+import type { CasesClient } from '../domains/cases/cases.client';
+import type { AlertsClient } from '../domains/alerts/alerts.client';
+import type { CaseDetails } from '../domains/cases/cases.types';
+import type { AlertDetails } from '../domains/alerts/alerts.types';
 
 export interface CaseReport {
   case: CaseDetails;
@@ -25,7 +25,7 @@ export class CaseReportComposite {
       throw new Error(`Case not found: ${caseId}`);
     }
 
-    const {compositeIds} = await this.alerts.search({
+    const { compositeIds } = await this.alerts.search({
       filter: `case_id:'${caseId}'`,
     });
     const alerts =
@@ -33,6 +33,6 @@ export class CaseReportComposite {
         ? []
         : await this.alerts.getDetails(compositeIds);
 
-    return {case: caseDetails, alerts};
+    return { case: caseDetails, alerts };
   }
 }

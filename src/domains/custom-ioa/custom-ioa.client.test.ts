@@ -1,12 +1,12 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {CustomIoaClient} from './custom-ioa.client';
-import type {HttpClient} from '../../core/http-client';
+import { describe, it, expect, mock } from 'bun:test';
+import { CustomIoaClient } from './custom-ioa.client';
+import type { HttpClient } from '../../core/http-client';
 import ruleGroupFixture from './__fixtures__/rule-group-response.json';
 import ruleFixture from './__fixtures__/rule-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('CustomIoaClient', () => {
@@ -15,7 +15,7 @@ describe('CustomIoaClient', () => {
       const http = fakeHttpClient({
         resources: ['rulegroup-1'],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const customIoa = new CustomIoaClient(http);
 
@@ -71,7 +71,7 @@ describe('CustomIoaClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/ioarules/entities/rule-groups/v1',
-        query: {ids: ['rulegroup-1']},
+        query: { ids: ['rulegroup-1'] },
       });
       expect(group.platform).toBe('Windows');
     });
@@ -142,7 +142,7 @@ describe('CustomIoaClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'DELETE',
         path: '/ioarules/entities/rule-groups/v1',
-        query: {ids: ['rulegroup-1'], comment: 'cleanup'},
+        query: { ids: ['rulegroup-1'], comment: 'cleanup' },
       });
     });
   });
@@ -152,11 +152,13 @@ describe('CustomIoaClient', () => {
       const http = fakeHttpClient({
         resources: ['rule-1'],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const customIoa = new CustomIoaClient(http);
 
-      const result = await customIoa.searchRuleIds({filter: "enabled:'true'"});
+      const result = await customIoa.searchRuleIds({
+        filter: "enabled:'true'",
+      });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -183,7 +185,7 @@ describe('CustomIoaClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/ioarules/entities/rules/v1',
-        query: {ids: ['rule-1']},
+        query: { ids: ['rule-1'] },
       });
       expect(rule.name).toBe('Encoded command');
       expect(rule.fieldValues[0].value).toBe('*-EncodedCommand*');
@@ -200,7 +202,7 @@ describe('CustomIoaClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/ioarules/entities/rules/GET/v1',
-        body: {ids: ['cid:rule-1:1']},
+        body: { ids: ['cid:rule-1:1'] },
       });
       expect(rule.instanceId).toBe('rule-1');
     });
@@ -220,7 +222,7 @@ describe('CustomIoaClient', () => {
         dispositionId: 20,
         patternSeverity: 'high',
         fieldValues: [
-          {name: 'CommandLine', type: 'string', value: '*-EncodedCommand*'},
+          { name: 'CommandLine', type: 'string', value: '*-EncodedCommand*' },
         ],
       });
 
@@ -273,7 +275,7 @@ describe('CustomIoaClient', () => {
             dispositionId: 20,
             patternSeverity: 'high',
             fieldValues: [
-              {name: 'CommandLine', type: 'string', value: '*-enc*'},
+              { name: 'CommandLine', type: 'string', value: '*-enc*' },
             ],
             rulegroupVersion: 2,
           },
@@ -438,9 +440,9 @@ describe('CustomIoaClient', () => {
         {
           resources: ['high'],
           errors: [],
-          meta: {pagination: {offset: 0, limit: 100, total: 1}},
+          meta: { pagination: { offset: 0, limit: 100, total: 1 } },
         },
-        {resources: [{name: 'high', severity: '80'}], errors: [], meta: {}},
+        { resources: [{ name: 'high', severity: '80' }], errors: [], meta: {} },
       );
       const customIoa = new CustomIoaClient(http);
 
@@ -450,12 +452,12 @@ describe('CustomIoaClient', () => {
       expect(http.request).toHaveBeenNthCalledWith(1, {
         method: 'GET',
         path: '/ioarules/queries/pattern-severities/v1',
-        query: {offset: undefined, limit: undefined},
+        query: { offset: undefined, limit: undefined },
       });
       expect(http.request).toHaveBeenNthCalledWith(2, {
         method: 'GET',
         path: '/ioarules/entities/pattern-severities/v1',
-        query: {ids: ['high']},
+        query: { ids: ['high'] },
       });
       expect(ids.ids).toEqual(['high']);
       expect(pattern.severity).toBe('80');
@@ -468,9 +470,13 @@ describe('CustomIoaClient', () => {
         {
           resources: ['windows'],
           errors: [],
-          meta: {pagination: {offset: 0, limit: 100, total: 1}},
+          meta: { pagination: { offset: 0, limit: 100, total: 1 } },
         },
-        {resources: [{id: 'windows', label: 'Windows'}], errors: [], meta: {}},
+        {
+          resources: [{ id: 'windows', label: 'Windows' }],
+          errors: [],
+          meta: {},
+        },
       );
       const customIoa = new CustomIoaClient(http);
 
@@ -480,12 +486,12 @@ describe('CustomIoaClient', () => {
       expect(http.request).toHaveBeenNthCalledWith(1, {
         method: 'GET',
         path: '/ioarules/queries/platforms/v1',
-        query: {offset: undefined, limit: undefined},
+        query: { offset: undefined, limit: undefined },
       });
       expect(http.request).toHaveBeenNthCalledWith(2, {
         method: 'GET',
         path: '/ioarules/entities/platforms/v1',
-        query: {ids: ['windows']},
+        query: { ids: ['windows'] },
       });
       expect(ids.ids).toEqual(['windows']);
       expect(platform.label).toBe('Windows');
@@ -498,7 +504,7 @@ describe('CustomIoaClient', () => {
         {
           resources: ['ruletype-1'],
           errors: [],
-          meta: {pagination: {offset: 0, limit: 100, total: 1}},
+          meta: { pagination: { offset: 0, limit: 100, total: 1 } },
         },
         {
           resources: [
@@ -509,8 +515,8 @@ describe('CustomIoaClient', () => {
               long_desc: 'Triggered on process creation events',
               channel: 1,
               released: true,
-              disposition_map: [{id: 20, label: 'Detect'}],
-              fields: [{name: 'CommandLine', label: 'Command Line'}],
+              disposition_map: [{ id: 20, label: 'Detect' }],
+              fields: [{ name: 'CommandLine', label: 'Command Line' }],
             },
           ],
           errors: [],
@@ -525,12 +531,12 @@ describe('CustomIoaClient', () => {
       expect(http.request).toHaveBeenNthCalledWith(1, {
         method: 'GET',
         path: '/ioarules/queries/rule-types/v1',
-        query: {offset: undefined, limit: undefined},
+        query: { offset: undefined, limit: undefined },
       });
       expect(http.request).toHaveBeenNthCalledWith(2, {
         method: 'GET',
         path: '/ioarules/entities/rule-types/v1',
-        query: {ids: ['ruletype-1']},
+        query: { ids: ['ruletype-1'] },
       });
       expect(ids.ids).toEqual(['ruletype-1']);
       expect(ruleType.name).toBe('Process Creation');

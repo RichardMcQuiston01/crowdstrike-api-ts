@@ -1,4 +1,4 @@
-import type {RequestOptions} from '../../core/http-client';
+import type { RequestOptions } from '../../core/http-client';
 import type {
   IocSearchParams,
   CreateIocParams,
@@ -38,7 +38,7 @@ export function buildGetDetailsRequest(ids: string[]): RequestOptions {
   return {
     method: 'GET',
     path: '/iocs/entities/indicators/v1',
-    query: {ids},
+    query: { ids },
   };
 }
 
@@ -52,7 +52,7 @@ export function buildCreateRequest(params: CreateIocParams): RequestOptions {
     },
     body: {
       comment: params.comment,
-      indicators: params.indicators.map(indicator => ({
+      indicators: params.indicators.map((indicator) => ({
         type: indicator.type,
         value: indicator.value,
         applied_globally: indicator.appliedGlobally,

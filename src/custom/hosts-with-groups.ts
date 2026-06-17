@@ -1,6 +1,9 @@
-import type {HostsClient} from '../domains/hosts/hosts.client';
-import type {HostGroupsClient} from '../domains/host-groups/host-groups.client';
-import type {HostSearchParams, HostDetails} from '../domains/hosts/hosts.types';
+import type { HostsClient } from '../domains/hosts/hosts.client';
+import type { HostGroupsClient } from '../domains/host-groups/host-groups.client';
+import type {
+  HostSearchParams,
+  HostDetails,
+} from '../domains/hosts/hosts.types';
 
 export interface HostGroupSummary {
   id: string;
@@ -50,9 +53,9 @@ export class HostsWithGroupsComposite {
       }
     }
 
-    return hosts.map(host => ({
+    return hosts.map((host) => ({
       ...host,
-      groups: extractGroupIds(host).map(id => ({
+      groups: extractGroupIds(host).map((id) => ({
         id,
         name: namesById.get(id) ?? id,
       })),

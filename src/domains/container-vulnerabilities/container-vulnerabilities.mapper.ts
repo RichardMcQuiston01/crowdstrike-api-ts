@@ -1,4 +1,4 @@
-import type {VulnerabilityDetails} from './container-vulnerabilities.types';
+import type { VulnerabilityDetails } from './container-vulnerabilities.types';
 
 /** Raw wire shape of a container vulnerability record (ModelsAPIVulnerabilityCombined). */
 export interface RawVulnerability {

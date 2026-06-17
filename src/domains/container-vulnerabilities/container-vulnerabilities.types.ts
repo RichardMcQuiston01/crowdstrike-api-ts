@@ -7,7 +7,7 @@ export interface VulnerabilitySearchParams {
 
 export interface VulnerabilitySearchResult {
   vulnerabilities: VulnerabilityDetails[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 /** Friendlier, camelCased shape of a container vulnerability record. */

@@ -1,4 +1,4 @@
-import type {PreventionPolicyDetails} from './prevention-policies.types';
+import type { PreventionPolicyDetails } from './prevention-policies.types';
 
 /** Raw wire shape of a CrowdStrike prevention policy entity (PreventionPolicyV1). */
 export interface RawPreventionPolicy {

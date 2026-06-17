@@ -1,5 +1,5 @@
-import {describe, it, expect} from 'bun:test';
-import {FalconClient, FalconRegion, CrowdStrikeApiError} from './index';
+import { describe, it, expect } from 'bun:test';
+import { FalconClient, FalconRegion, CrowdStrikeApiError } from './index';
 
 describe('public barrel', () => {
   it('exposes a working FalconClient and core exports', () => {

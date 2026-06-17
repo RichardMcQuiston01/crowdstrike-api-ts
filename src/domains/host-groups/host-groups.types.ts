@@ -7,7 +7,7 @@ export interface HostGroupSearchParams {
 
 export interface HostGroupSearchResult {
   groupIds: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export type HostGroupType = 'static' | 'dynamic' | 'staticByID';
@@ -50,7 +50,7 @@ export interface QueryGroupMembersParams {
 
 export interface GroupMemberSearchResult {
   hostIds: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 /** Supported action_name values for HostGroupApi.performGroupAction. */

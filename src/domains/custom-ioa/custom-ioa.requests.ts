@@ -1,4 +1,4 @@
-import type {RequestOptions} from '../../core/http-client';
+import type { RequestOptions } from '../../core/http-client';
 import type {
   CustomIoaSearchParams,
   LookupSearchParams,
@@ -45,7 +45,7 @@ export function buildGetRuleGroupsRequest(ids: string[]): RequestOptions {
   return {
     method: 'GET',
     path: '/ioarules/entities/rule-groups/v1',
-    query: {ids},
+    query: { ids },
   };
 }
 
@@ -88,7 +88,7 @@ export function buildDeleteRuleGroupsRequest(
   return {
     method: 'DELETE',
     path: '/ioarules/entities/rule-groups/v1',
-    query: {ids, comment},
+    query: { ids, comment },
   };
 }
 
@@ -103,14 +103,14 @@ export function buildSearchRuleIdsRequest(
 }
 
 export function buildGetRulesRequest(ids: string[]): RequestOptions {
-  return {method: 'GET', path: '/ioarules/entities/rules/v1', query: {ids}};
+  return { method: 'GET', path: '/ioarules/entities/rules/v1', query: { ids } };
 }
 
 export function buildGetRulesByVersionRequest(ids: string[]): RequestOptions {
   return {
     method: 'POST',
     path: '/ioarules/entities/rules/GET/v1',
-    body: {ids},
+    body: { ids },
   };
 }
 
@@ -195,7 +195,7 @@ export function buildDeleteRulesRequest(
   return {
     method: 'DELETE',
     path: '/ioarules/entities/rules/v1',
-    query: {rule_group_id: ruleGroupId, ids, comment},
+    query: { rule_group_id: ruleGroupId, ids, comment },
   };
 }
 
@@ -206,7 +206,7 @@ export function buildValidateRequest(
     method: 'POST',
     path: '/ioarules/entities/rules/validate/v1',
     body: {
-      fields: fields.map(field => ({
+      fields: fields.map((field) => ({
         name: field.name,
         type: field.type,
         test_data: field.testData,
@@ -222,7 +222,7 @@ export function buildSearchPatternIdsRequest(
   return {
     method: 'GET',
     path: '/ioarules/queries/pattern-severities/v1',
-    query: {offset: params.offset, limit: params.limit},
+    query: { offset: params.offset, limit: params.limit },
   };
 }
 
@@ -230,7 +230,7 @@ export function buildGetPatternsRequest(ids: string[]): RequestOptions {
   return {
     method: 'GET',
     path: '/ioarules/entities/pattern-severities/v1',
-    query: {ids},
+    query: { ids },
   };
 }
 
@@ -240,7 +240,7 @@ export function buildSearchPlatformIdsRequest(
   return {
     method: 'GET',
     path: '/ioarules/queries/platforms/v1',
-    query: {offset: params.offset, limit: params.limit},
+    query: { offset: params.offset, limit: params.limit },
   };
 }
 
@@ -248,7 +248,7 @@ export function buildGetPlatformsRequest(ids: string[]): RequestOptions {
   return {
     method: 'GET',
     path: '/ioarules/entities/platforms/v1',
-    query: {ids},
+    query: { ids },
   };
 }
 
@@ -258,7 +258,7 @@ export function buildSearchRuleTypeIdsRequest(
   return {
     method: 'GET',
     path: '/ioarules/queries/rule-types/v1',
-    query: {offset: params.offset, limit: params.limit},
+    query: { offset: params.offset, limit: params.limit },
   };
 }
 
@@ -266,6 +266,6 @@ export function buildGetRuleTypesRequest(ids: string[]): RequestOptions {
   return {
     method: 'GET',
     path: '/ioarules/entities/rule-types/v1',
-    query: {ids},
+    query: { ids },
   };
 }

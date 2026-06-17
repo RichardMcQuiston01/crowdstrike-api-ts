@@ -1,11 +1,11 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {HttpClient, type TokenProvider} from './http-client';
-import {CrowdStrikeApiError, CrowdStrikeNetworkError} from './errors';
+import { describe, it, expect, mock } from 'bun:test';
+import { HttpClient, type TokenProvider } from './http-client';
+import { CrowdStrikeApiError, CrowdStrikeNetworkError } from './errors';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: {'Content-Type': 'application/json'},
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 
@@ -28,7 +28,7 @@ function fakeTokenProvider(token = 'token-1'): TokenProvider {
 describe('HttpClient', () => {
   describe('request building', () => {
     it('builds the URL with query params, including arrays as repeated keys', async () => {
-      const fetchImpl = mock(async () => jsonResponse({resources: []}));
+      const fetchImpl = mock(async () => jsonResponse({ resources: [] }));
       const http = new HttpClient(
         'https://api.crowdstrike.com',
         null,
@@ -58,24 +58,24 @@ describe('HttpClient', () => {
     });
 
     it('JSON-encodes the body by default', async () => {
-      const fetchImpl = mock(async () => jsonResponse({resources: []}));
+      const fetchImpl = mock(async () => jsonResponse({ resources: [] }));
       const http = new HttpClient(
         'https://api.crowdstrike.com',
         null,
         fetchImpl as unknown as typeof fetch,
       );
 
-      await http.request({method: 'POST', path: '/x', body: {ids: ['a']}});
+      await http.request({ method: 'POST', path: '/x', body: { ids: ['a'] } });
 
       const [, init] = lastCall(fetchImpl);
-      expect(init.body).toBe(JSON.stringify({ids: ['a']}));
+      expect(init.body).toBe(JSON.stringify({ ids: ['a'] }));
       expect((init.headers as Headers).get('Content-Type')).toBe(
         'application/json',
       );
     });
 
     it('form-encodes the body when bodyEncoding is form', async () => {
-      const fetchImpl = mock(async () => jsonResponse({access_token: 'abc'}));
+      const fetchImpl = mock(async () => jsonResponse({ access_token: 'abc' }));
       const http = new HttpClient(
         'https://api.crowdstrike.com',
         null,
@@ -85,7 +85,7 @@ describe('HttpClient', () => {
       await http.request({
         method: 'POST',
         path: '/oauth2/token',
-        body: {client_id: 'id', client_secret: 'secret'},
+        body: { client_id: 'id', client_secret: 'secret' },
         bodyEncoding: 'form',
       });
 
@@ -99,7 +99,7 @@ describe('HttpClient', () => {
 
   describe('authorization', () => {
     it('attaches a bearer token when a token provider is supplied', async () => {
-      const fetchImpl = mock(async () => jsonResponse({resources: []}));
+      const fetchImpl = mock(async () => jsonResponse({ resources: [] }));
       const tokenProvider = fakeTokenProvider('my-token');
       const http = new HttpClient(
         'https://api.crowdstrike.com',
@@ -107,7 +107,7 @@ describe('HttpClient', () => {
         fetchImpl as unknown as typeof fetch,
       );
 
-      await http.request({method: 'GET', path: '/x'});
+      await http.request({ method: 'GET', path: '/x' });
 
       const [, init] = lastCall(fetchImpl);
       expect((init.headers as Headers).get('Authorization')).toBe(
@@ -116,14 +116,14 @@ describe('HttpClient', () => {
     });
 
     it('omits the Authorization header when no token provider is supplied', async () => {
-      const fetchImpl = mock(async () => jsonResponse({resources: []}));
+      const fetchImpl = mock(async () => jsonResponse({ resources: [] }));
       const http = new HttpClient(
         'https://api.crowdstrike.com',
         null,
         fetchImpl as unknown as typeof fetch,
       );
 
-      await http.request({method: 'GET', path: '/x'});
+      await http.request({ method: 'GET', path: '/x' });
 
       const [, init] = lastCall(fetchImpl);
       expect((init.headers as Headers).has('Authorization')).toBe(false);
@@ -136,8 +136,8 @@ describe('HttpClient', () => {
       const fetchImpl = mock(async () => {
         call += 1;
         return call === 1
-          ? jsonResponse({errors: []}, 401)
-          : jsonResponse({resources: ['ok']});
+          ? jsonResponse({ errors: [] }, 401)
+          : jsonResponse({ resources: ['ok'] });
       });
       const tokenProvider = fakeTokenProvider('stale-token');
       const http = new HttpClient(
@@ -146,7 +146,7 @@ describe('HttpClient', () => {
         fetchImpl as unknown as typeof fetch,
       );
 
-      const result = await http.request<{resources: string[]}>({
+      const result = await http.request<{ resources: string[] }>({
         method: 'GET',
         path: '/x',
       });
@@ -157,7 +157,7 @@ describe('HttpClient', () => {
     });
 
     it('does not retry a second time if the retried request also 401s', async () => {
-      const fetchImpl = mock(async () => jsonResponse({errors: []}, 401));
+      const fetchImpl = mock(async () => jsonResponse({ errors: [] }, 401));
       const tokenProvider = fakeTokenProvider();
       const http = new HttpClient(
         'https://api.crowdstrike.com',
@@ -165,7 +165,7 @@ describe('HttpClient', () => {
         fetchImpl as unknown as typeof fetch,
       );
 
-      await expect(http.request({method: 'GET', path: '/x'})).rejects.toThrow(
+      await expect(http.request({ method: 'GET', path: '/x' })).rejects.toThrow(
         CrowdStrikeApiError,
       );
       expect(fetchImpl).toHaveBeenCalledTimes(2);
@@ -177,8 +177,8 @@ describe('HttpClient', () => {
       const fetchImpl = mock(async () =>
         jsonResponse(
           {
-            errors: [{code: 403, message: 'access denied'}],
-            meta: {trace_id: 'trace-123'},
+            errors: [{ code: 403, message: 'access denied' }],
+            meta: { trace_id: 'trace-123' },
           },
           403,
         ),
@@ -190,12 +190,12 @@ describe('HttpClient', () => {
       );
 
       const error = (await http
-        .request({method: 'GET', path: '/x'})
-        .catch(e => e)) as CrowdStrikeApiError;
+        .request({ method: 'GET', path: '/x' })
+        .catch((e) => e)) as CrowdStrikeApiError;
       expect(error).toBeInstanceOf(CrowdStrikeApiError);
       expect(error.status).toBe(403);
       expect(error.traceId).toBe('trace-123');
-      expect(error.errors).toEqual([{code: 403, message: 'access denied'}]);
+      expect(error.errors).toEqual([{ code: 403, message: 'access denied' }]);
       expect(error.isAuthError).toBe(true);
     });
 
@@ -209,7 +209,7 @@ describe('HttpClient', () => {
         fetchImpl as unknown as typeof fetch,
       );
 
-      await expect(http.request({method: 'GET', path: '/x'})).rejects.toThrow(
+      await expect(http.request({ method: 'GET', path: '/x' })).rejects.toThrow(
         CrowdStrikeNetworkError,
       );
     });
@@ -217,26 +217,28 @@ describe('HttpClient', () => {
 
   describe('response handling', () => {
     it('returns undefined for a 204 No Content response', async () => {
-      const fetchImpl = mock(async () => new Response(null, {status: 204}));
+      const fetchImpl = mock(async () => new Response(null, { status: 204 }));
       const http = new HttpClient(
         'https://api.crowdstrike.com',
         null,
         fetchImpl as unknown as typeof fetch,
       );
 
-      const result = await http.request({method: 'DELETE', path: '/x'});
+      const result = await http.request({ method: 'DELETE', path: '/x' });
       expect(result).toBeUndefined();
     });
 
     it('returns the parsed JSON body on success', async () => {
-      const fetchImpl = mock(async () => jsonResponse({resources: ['a', 'b']}));
+      const fetchImpl = mock(async () =>
+        jsonResponse({ resources: ['a', 'b'] }),
+      );
       const http = new HttpClient(
         'https://api.crowdstrike.com',
         null,
         fetchImpl as unknown as typeof fetch,
       );
 
-      const result = await http.request<{resources: string[]}>({
+      const result = await http.request<{ resources: string[] }>({
         method: 'GET',
         path: '/x',
       });
@@ -248,7 +250,7 @@ describe('HttpClient', () => {
         async () =>
           new Response(new Blob(['binary-content']), {
             status: 200,
-            headers: {'Content-Type': 'application/octet-stream'},
+            headers: { 'Content-Type': 'application/octet-stream' },
           }),
       );
       const http = new HttpClient(

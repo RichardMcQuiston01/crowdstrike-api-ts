@@ -1,4 +1,4 @@
-import type {RequestOptions} from '../../core/http-client';
+import type { RequestOptions } from '../../core/http-client';
 import type {
   CaseSearchParams,
   AddCaseTagsParams,
@@ -21,17 +21,17 @@ export function buildSearchRequest(params: CaseSearchParams): RequestOptions {
 
 export function buildGetDetailsRequest(
   ids: string[],
-): RequestOptions<{ids: string[]}> {
-  return {method: 'POST', path: '/cases/entities/cases/v2', body: {ids}};
+): RequestOptions<{ ids: string[] }> {
+  return { method: 'POST', path: '/cases/entities/cases/v2', body: { ids } };
 }
 
 export function buildAddTagsRequest(
   params: AddCaseTagsParams,
-): RequestOptions<{id: string; tags: string[]}> {
+): RequestOptions<{ id: string; tags: string[] }> {
   return {
     method: 'POST',
     path: '/cases/entities/case-tags/v1',
-    body: {id: params.id, tags: params.tags},
+    body: { id: params.id, tags: params.tags },
   };
 }
 
@@ -41,6 +41,6 @@ export function buildRemoveTagsRequest(
   return {
     method: 'DELETE',
     path: '/cases/entities/case-tags/v1',
-    query: {id: params.id, tag: params.tags},
+    query: { id: params.id, tag: params.tags },
   };
 }

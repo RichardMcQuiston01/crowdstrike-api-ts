@@ -9,12 +9,12 @@ export interface PreventionPolicySearchParams {
 
 export interface PreventionPolicyIdSearchResult {
   ids: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface PreventionPolicySearchResult {
   policies: PreventionPolicyDetails[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface PreventionPolicyDetails {
@@ -94,5 +94,5 @@ export interface QueryPreventionPolicyMembersParams {
 
 export interface PreventionPolicyMemberSearchResult {
   hostIds: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }

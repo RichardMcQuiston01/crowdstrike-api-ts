@@ -1,12 +1,12 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {RealTimeResponseAdminClient} from './real-time-response-admin.client';
-import type {HttpClient} from '../../core/http-client';
+import { describe, it, expect, mock } from 'bun:test';
+import { RealTimeResponseAdminClient } from './real-time-response-admin.client';
+import type { HttpClient } from '../../core/http-client';
 import executeCommandFixture from './__fixtures__/execute-command-response.json';
 import commandStatusFixture from './__fixtures__/command-status-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('RealTimeResponseAdminClient', () => {
@@ -51,7 +51,7 @@ describe('RealTimeResponseAdminClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/real-time-response/entities/admin-command/v1',
-        query: {cloud_request_id: 'req-123', sequence_id: 0},
+        query: { cloud_request_id: 'req-123', sequence_id: 0 },
       });
       expect(result.complete).toBe(true);
     });

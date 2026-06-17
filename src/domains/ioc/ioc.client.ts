@@ -1,8 +1,11 @@
-import type {HttpClient} from '../../core/http-client';
-import {paginateOffset, type OffsetPageFetcher} from '../../core/pagination';
-import type {CrowdStrikeEnvelope, OffsetPaginationMeta} from '../../core/types';
+import type { HttpClient } from '../../core/http-client';
+import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
+import type {
+  CrowdStrikeEnvelope,
+  OffsetPaginationMeta,
+} from '../../core/types';
 import * as requests from './ioc.requests';
-import {mapRawIoc, type RawIoc} from './ioc.mapper';
+import { mapRawIoc, type RawIoc } from './ioc.mapper';
 import type {
   IocSearchParams,
   IocSearchResult,
@@ -19,7 +22,7 @@ function toPagination(raw: CrowdStrikeEnvelope<unknown>): {
 } {
   const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
   return (
-    pagination ?? {offset: 0, limit: 0, total: (raw.resources ?? []).length}
+    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
   );
 }
 
@@ -36,7 +39,7 @@ export class IocClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchRequest(params),
     );
-    return {ids: raw.resources, pagination: toPagination(raw)};
+    return { ids: raw.resources, pagination: toPagination(raw) };
   }
 
   /** Returns a single page of fully hydrated IOC records. */
@@ -57,10 +60,10 @@ export class IocClient {
     params: Omit<IocSearchParams, 'offset'> = {},
   ): AsyncGenerator<IocDetails> {
     const fetchPage: OffsetPageFetcher<IocDetails> = async (offset, limit) => {
-      const page = await this.searchCombined({...params, offset, limit});
-      return {resources: page.iocs, pagination: page.pagination};
+      const page = await this.searchCombined({ ...params, offset, limit });
+      return { resources: page.iocs, pagination: page.pagination };
     };
-    return paginateOffset(fetchPage, {pageSize: params.limit ?? 100});
+    return paginateOffset(fetchPage, { pageSize: params.limit ?? 100 });
   }
 
   async getDetails(ids: string[]): Promise<IocDetails[]> {

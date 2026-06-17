@@ -1,4 +1,4 @@
-import type {HostDetails} from './hosts.types';
+import type { HostDetails } from './hosts.types';
 
 /** Raw wire shape of a CrowdStrike device entity (DeviceapiDeviceSwagger). */
 export interface RawDevice {

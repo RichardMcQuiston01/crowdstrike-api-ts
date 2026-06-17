@@ -1,9 +1,9 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {CaseReportComposite} from './case-report';
-import type {CasesClient} from '../domains/cases/cases.client';
-import type {AlertsClient} from '../domains/alerts/alerts.client';
-import type {CaseDetails} from '../domains/cases/cases.types';
-import type {AlertDetails} from '../domains/alerts/alerts.types';
+import { describe, it, expect, mock } from 'bun:test';
+import { CaseReportComposite } from './case-report';
+import type { CasesClient } from '../domains/cases/cases.client';
+import type { AlertsClient } from '../domains/alerts/alerts.client';
+import type { CaseDetails } from '../domains/cases/cases.types';
+import type { AlertDetails } from '../domains/alerts/alerts.types';
 
 function fakeCase(overrides: Partial<CaseDetails> = {}): CaseDetails {
   return {
@@ -25,7 +25,7 @@ function fakeCase(overrides: Partial<CaseDetails> = {}): CaseDetails {
 }
 
 function fakeAlert(compositeId: string): AlertDetails {
-  return {compositeId, severity: 80, status: 'new', raw: {}};
+  return { compositeId, severity: 80, status: 'new', raw: {} };
 }
 
 describe('CaseReportComposite', () => {
@@ -33,21 +33,21 @@ describe('CaseReportComposite', () => {
     const getDetails = mock(async () => [fakeCase()]);
     const search = mock(async () => ({
       compositeIds: ['alert-1', 'alert-2'],
-      pagination: {offset: 0, limit: 100, total: 2},
+      pagination: { offset: 0, limit: 100, total: 2 },
     }));
     const getAlertDetails = mock(async () => [
       fakeAlert('alert-1'),
       fakeAlert('alert-2'),
     ]);
     const composite = new CaseReportComposite(
-      {getDetails} as unknown as CasesClient,
-      {search, getDetails: getAlertDetails} as unknown as AlertsClient,
+      { getDetails } as unknown as CasesClient,
+      { search, getDetails: getAlertDetails } as unknown as AlertsClient,
     );
 
     const report = await composite.get('case-1');
 
     expect(getDetails).toHaveBeenCalledWith(['case-1']);
-    expect(search).toHaveBeenCalledWith({filter: "case_id:'case-1'"});
+    expect(search).toHaveBeenCalledWith({ filter: "case_id:'case-1'" });
     expect(getAlertDetails).toHaveBeenCalledWith(['alert-1', 'alert-2']);
     expect(report.case).toEqual(fakeCase());
     expect(report.alerts).toEqual([fakeAlert('alert-1'), fakeAlert('alert-2')]);
@@ -57,12 +57,12 @@ describe('CaseReportComposite', () => {
     const getDetails = mock(async () => [fakeCase()]);
     const search = mock(async () => ({
       compositeIds: [],
-      pagination: {offset: 0, limit: 100, total: 0},
+      pagination: { offset: 0, limit: 100, total: 0 },
     }));
     const getAlertDetails = mock(async () => []);
     const composite = new CaseReportComposite(
-      {getDetails} as unknown as CasesClient,
-      {search, getDetails: getAlertDetails} as unknown as AlertsClient,
+      { getDetails } as unknown as CasesClient,
+      { search, getDetails: getAlertDetails } as unknown as AlertsClient,
     );
 
     const report = await composite.get('case-1');
@@ -75,11 +75,11 @@ describe('CaseReportComposite', () => {
     const getDetails = mock(async () => []);
     const search = mock(async () => ({
       compositeIds: [],
-      pagination: {offset: 0, limit: 100, total: 0},
+      pagination: { offset: 0, limit: 100, total: 0 },
     }));
     const composite = new CaseReportComposite(
-      {getDetails} as unknown as CasesClient,
-      {search} as unknown as AlertsClient,
+      { getDetails } as unknown as CasesClient,
+      { search } as unknown as AlertsClient,
     );
 
     await expect(composite.get('missing-case')).rejects.toThrow(

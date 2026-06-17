@@ -7,7 +7,7 @@ export interface IdentitySensorSearchParams {
 
 export interface IdentitySensorIdSearchResult {
   ids: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface IdentitySensorDetails {

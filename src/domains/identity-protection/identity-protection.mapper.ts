@@ -1,4 +1,4 @@
-import type {IdentitySensorDetails} from './identity-protection.types';
+import type { IdentitySensorDetails } from './identity-protection.types';
 
 /** Raw wire shape of an identity protection sensor record (InternalSensorStatus). */
 export interface RawIdentitySensor {

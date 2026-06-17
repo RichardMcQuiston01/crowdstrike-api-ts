@@ -1,5 +1,5 @@
-import {CrowdStrikeApiError, CrowdStrikeNetworkError} from './errors';
-import type {CrowdStrikeErrorDetail} from './types';
+import { CrowdStrikeApiError, CrowdStrikeNetworkError } from './errors';
+import type { CrowdStrikeErrorDetail } from './types';
 
 /** Minimal contract HttpClient needs from whatever manages bearer tokens. */
 export interface TokenProvider {
@@ -24,7 +24,7 @@ export interface RequestOptions<TBody = unknown> {
 /** Raw wire shape of CrowdStrike's error envelope (snake_case meta fields). */
 interface RawErrorEnvelope {
   errors?: CrowdStrikeErrorDetail[];
-  meta?: {trace_id?: string};
+  meta?: { trace_id?: string };
 }
 
 const DEFAULT_TIMEOUT_MS = 30_000;

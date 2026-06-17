@@ -1,4 +1,4 @@
-import type {SensorInstallerDetails} from './sensor-download.types';
+import type { SensorInstallerDetails } from './sensor-download.types';
 
 /** Raw wire shape of a sensor installer record (DomainSensorInstallerV3). */
 export interface RawSensorInstaller {

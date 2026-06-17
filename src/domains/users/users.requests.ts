@@ -1,4 +1,4 @@
-import type {RequestOptions} from '../../core/http-client';
+import type { RequestOptions } from '../../core/http-client';
 import type {
   UserSearchParams,
   CreateUserParams,
@@ -28,7 +28,7 @@ export function buildGetDetailsRequest(ids: string[]): RequestOptions {
   return {
     method: 'POST',
     path: '/user-management/entities/users/GET/v1',
-    body: {ids},
+    body: { ids },
   };
 }
 
@@ -36,7 +36,7 @@ export function buildCreateRequest(params: CreateUserParams): RequestOptions {
   return {
     method: 'POST',
     path: '/user-management/entities/users/v1',
-    query: {validate_only: params.validateOnly},
+    query: { validate_only: params.validateOnly },
     body: {
       cid: params.cid,
       first_name: params.firstName,
@@ -51,7 +51,7 @@ export function buildUpdateRequest(params: UpdateUserParams): RequestOptions {
   return {
     method: 'PATCH',
     path: '/user-management/entities/users/v1',
-    query: {user_uuid: params.userUuid},
+    query: { user_uuid: params.userUuid },
     body: {
       first_name: params.firstName,
       last_name: params.lastName,
@@ -63,7 +63,7 @@ export function buildDeleteRequest(userUuid: string): RequestOptions {
   return {
     method: 'DELETE',
     path: '/user-management/entities/users/v1',
-    query: {user_uuid: userUuid},
+    query: { user_uuid: userUuid },
   };
 }
 
@@ -74,8 +74,8 @@ export function buildGetRolesRequest(
   return {
     method: 'POST',
     path: '/user-management/entities/roles/GET/v2',
-    query: {cid},
-    body: {ids},
+    query: { cid },
+    body: { ids },
   };
 }
 
@@ -101,7 +101,7 @@ export function buildPerformActionRequest(
     path: '/user-management/entities/user-actions/v1',
     body: {
       ids: params.ids,
-      action: {action_name: params.action},
+      action: { action_name: params.action },
     },
   };
 }

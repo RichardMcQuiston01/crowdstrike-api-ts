@@ -16,7 +16,7 @@ export interface CustomIoaSearchParams {
 
 export interface CustomIoaIdSearchResult {
   ids: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface RuleValueOption {

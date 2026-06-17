@@ -1,5 +1,8 @@
-import type {HttpClient} from '../../core/http-client';
-import type {CrowdStrikeEnvelope, OffsetPaginationMeta} from '../../core/types';
+import type { HttpClient } from '../../core/http-client';
+import type {
+  CrowdStrikeEnvelope,
+  OffsetPaginationMeta,
+} from '../../core/types';
 import * as requests from './users.requests';
 import {
   mapRawUser,
@@ -30,7 +33,7 @@ function toPagination(raw: CrowdStrikeEnvelope<unknown>): {
 } {
   const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
   return (
-    pagination ?? {offset: 0, limit: 0, total: (raw.resources ?? []).length}
+    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
   );
 }
 
@@ -55,7 +58,7 @@ export class UsersClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchIdsRequest(params),
     );
-    return {ids: raw.resources, pagination: toPagination(raw)};
+    return { ids: raw.resources, pagination: toPagination(raw) };
   }
 
   async getDetails(ids: string[]): Promise<UserDetails[]> {

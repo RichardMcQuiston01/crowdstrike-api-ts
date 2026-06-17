@@ -1,26 +1,26 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {OAuth2TokenManager} from './auth';
-import {CrowdStrikeAuthConfigError} from './errors';
-import type {Oauth2Client} from '../domains/oauth2/oauth2.client';
-import type {FalconClientConfig} from '../config';
+import { describe, it, expect, mock } from 'bun:test';
+import { OAuth2TokenManager } from './auth';
+import { CrowdStrikeAuthConfigError } from './errors';
+import type { Oauth2Client } from '../domains/oauth2/oauth2.client';
+import type { FalconClientConfig } from '../config';
 
 function fakeOauth2Client(
   createToken: Oauth2Client['createToken'],
 ): Oauth2Client {
-  return {createToken} as unknown as Oauth2Client;
+  return { createToken } as unknown as Oauth2Client;
 }
 
 function config(
   overrides: Partial<FalconClientConfig> = {},
 ): FalconClientConfig {
-  return {clientId: 'id', clientSecret: 'secret', ...overrides};
+  return { clientId: 'id', clientSecret: 'secret', ...overrides };
 }
 
 describe('OAuth2TokenManager', () => {
   it('throws CrowdStrikeAuthConfigError synchronously if credentials are missing', () => {
     const oauth2Client = fakeOauth2Client(mock());
     expect(
-      () => new OAuth2TokenManager(config({clientId: ''}), oauth2Client),
+      () => new OAuth2TokenManager(config({ clientId: '' }), oauth2Client),
     ).toThrow(CrowdStrikeAuthConfigError);
   });
 
@@ -48,7 +48,7 @@ describe('OAuth2TokenManager', () => {
       expiresIn: 1800,
     }));
     const manager = new OAuth2TokenManager(
-      config({memberCid: 'child-cid'}),
+      config({ memberCid: 'child-cid' }),
       fakeOauth2Client(createToken),
     );
 
@@ -101,7 +101,7 @@ describe('OAuth2TokenManager', () => {
     }) => void;
     const createToken = mock(
       () =>
-        new Promise<{accessToken: string; expiresIn: number}>(resolve => {
+        new Promise<{ accessToken: string; expiresIn: number }>((resolve) => {
           resolveFetch = resolve;
         }),
     );
@@ -112,7 +112,7 @@ describe('OAuth2TokenManager', () => {
 
     const first = manager.getToken();
     const second = manager.getToken();
-    resolveFetch({accessToken: 'token-1', expiresIn: 1800});
+    resolveFetch({ accessToken: 'token-1', expiresIn: 1800 });
 
     expect(await first).toBe('token-1');
     expect(await second).toBe('token-1');

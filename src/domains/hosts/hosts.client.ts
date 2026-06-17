@@ -1,8 +1,11 @@
-import type {HttpClient} from '../../core/http-client';
-import {paginateOffset, type OffsetPageFetcher} from '../../core/pagination';
-import type {CrowdStrikeEnvelope, OffsetPaginationMeta} from '../../core/types';
+import type { HttpClient } from '../../core/http-client';
+import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
+import type {
+  CrowdStrikeEnvelope,
+  OffsetPaginationMeta,
+} from '../../core/types';
 import * as requests from './hosts.requests';
-import {mapRawDeviceToHostDetails, type RawDevice} from './hosts.mapper';
+import { mapRawDeviceToHostDetails, type RawDevice } from './hosts.mapper';
 import type {
   HostSearchParams,
   HostSearchResult,
@@ -35,10 +38,10 @@ export class HostsClient {
     params: Omit<HostSearchParams, 'offset'> = {},
   ): AsyncGenerator<string> {
     const fetchPage: OffsetPageFetcher<string> = async (offset, limit) => {
-      const page = await this.search({...params, offset, limit});
-      return {resources: page.hostIds, pagination: page.pagination};
+      const page = await this.search({ ...params, offset, limit });
+      return { resources: page.hostIds, pagination: page.pagination };
     };
-    return paginateOffset(fetchPage, {pageSize: params.limit ?? 100});
+    return paginateOffset(fetchPage, { pageSize: params.limit ?? 100 });
   }
 
   /** Hydrates full host details for up to 5000 device IDs. */
@@ -53,7 +56,7 @@ export class HostsClient {
   async searchWithDetails(
     params: HostSearchParams = {},
   ): Promise<HostDetails[]> {
-    const {hostIds} = await this.search(params);
+    const { hostIds } = await this.search(params);
     if (hostIds.length === 0) {
       return [];
     }

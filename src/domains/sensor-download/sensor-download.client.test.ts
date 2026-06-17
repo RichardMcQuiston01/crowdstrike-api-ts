@@ -1,11 +1,11 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {SensorDownloadClient} from './sensor-download.client';
-import type {HttpClient} from '../../core/http-client';
+import { describe, it, expect, mock } from 'bun:test';
+import { SensorDownloadClient } from './sensor-download.client';
+import type { HttpClient } from '../../core/http-client';
 import searchFixture from './__fixtures__/search-installers-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('SensorDownloadClient', () => {
@@ -14,11 +14,11 @@ describe('SensorDownloadClient', () => {
       const http = fakeHttpClient({
         resources: ['sha256_1'],
         errors: [],
-        meta: {pagination: {offset: 0, limit: 100, total: 1}},
+        meta: { pagination: { offset: 0, limit: 100, total: 1 } },
       });
       const sensors = new SensorDownloadClient(http);
 
-      const result = await sensors.searchIds({filter: "platform:'windows'"});
+      const result = await sensors.searchIds({ filter: "platform:'windows'" });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -39,7 +39,7 @@ describe('SensorDownloadClient', () => {
       const http = fakeHttpClient(searchFixture);
       const sensors = new SensorDownloadClient(http);
 
-      const result = await sensors.search({filter: "platform:'windows'"});
+      const result = await sensors.search({ filter: "platform:'windows'" });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -63,7 +63,7 @@ describe('SensorDownloadClient', () => {
         {
           resources: [searchFixture.resources[0]],
           errors: [],
-          meta: {pagination: {offset: 0, limit: 1, total: 2}},
+          meta: { pagination: { offset: 0, limit: 1, total: 2 } },
         },
         {
           resources: [
@@ -74,13 +74,13 @@ describe('SensorDownloadClient', () => {
             },
           ],
           errors: [],
-          meta: {pagination: {offset: 1, limit: 1, total: 2}},
+          meta: { pagination: { offset: 1, limit: 1, total: 2 } },
         },
       );
       const sensors = new SensorDownloadClient(http);
 
       const names: string[] = [];
-      for await (const installer of sensors.searchAll({limit: 1})) {
+      for await (const installer of sensors.searchAll({ limit: 1 })) {
         names.push(installer.name);
       }
 
@@ -98,7 +98,7 @@ describe('SensorDownloadClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/sensors/entities/installers/v3',
-        query: {ids: ['sha256_1']},
+        query: { ids: ['sha256_1'] },
       });
       expect(result[0].sha256).toBe(
         '9f1a2b3c4d5e6f708192a3b4c5d6e7f809192a3b4c5d6e7f8091a2b3c4d5e6f',
@@ -136,7 +136,7 @@ describe('SensorDownloadClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/sensors/entities/download-installer/v3',
-        query: {id: 'sha256_1'},
+        query: { id: 'sha256_1' },
         responseType: 'blob',
       });
       expect(result).toBe(blob);

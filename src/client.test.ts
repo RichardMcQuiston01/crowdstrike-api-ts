@@ -1,21 +1,21 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {FalconClient} from './client';
-import {FalconRegion} from './config';
-import {CrowdStrikeAuthConfigError} from './core/errors';
-import {HostsClient} from './domains/hosts/hosts.client';
-import {CustomIoaClient} from './domains/custom-ioa/custom-ioa.client';
+import { describe, it, expect, mock } from 'bun:test';
+import { FalconClient } from './client';
+import { FalconRegion } from './config';
+import { CrowdStrikeAuthConfigError } from './core/errors';
+import { HostsClient } from './domains/hosts/hosts.client';
+import { CustomIoaClient } from './domains/custom-ioa/custom-ioa.client';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: {'Content-Type': 'application/json'},
+    headers: { 'Content-Type': 'application/json' },
   });
 }
 
 describe('FalconClient', () => {
   it('throws CrowdStrikeAuthConfigError synchronously if credentials are missing', () => {
     expect(
-      () => new FalconClient({clientId: '', clientSecret: 'secret'}),
+      () => new FalconClient({ clientId: '', clientSecret: 'secret' }),
     ).toThrow(CrowdStrikeAuthConfigError);
   });
 
@@ -49,9 +49,9 @@ describe('FalconClient', () => {
     const fetchImpl = mock(async (url: string, init: RequestInit) => {
       calls.push([url, init]);
       if (calls.length === 1) {
-        return jsonResponse({access_token: 'token-1', expires_in: 1800});
+        return jsonResponse({ access_token: 'token-1', expires_in: 1800 });
       }
-      return jsonResponse({resources: ['host-1'], meta: {pagination: {}}});
+      return jsonResponse({ resources: ['host-1'], meta: { pagination: {} } });
     });
 
     const client = new FalconClient({
@@ -82,8 +82,8 @@ describe('FalconClient', () => {
     const fetchImpl = mock(async () => {
       call += 1;
       return call === 1
-        ? jsonResponse({access_token: 'token-1', expires_in: 1800})
-        : jsonResponse({resources: []});
+        ? jsonResponse({ access_token: 'token-1', expires_in: 1800 })
+        : jsonResponse({ resources: [] });
     });
     const client = new FalconClient({
       clientId: 'id',

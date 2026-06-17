@@ -1,4 +1,4 @@
-import type {RequestOptions} from '../../core/http-client';
+import type { RequestOptions } from '../../core/http-client';
 import type {
   CloudResourceSearchParams,
   ApplicationFindingsParams,
@@ -23,7 +23,7 @@ export function buildGetDetailsRequest(ids: string[]): RequestOptions {
   return {
     method: 'GET',
     path: '/cloud-security-assets/entities/resources/v1',
-    query: {ids},
+    query: { ids },
   };
 }
 

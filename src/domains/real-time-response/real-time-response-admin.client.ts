@@ -1,5 +1,5 @@
-import type {HttpClient} from '../../core/http-client';
-import type {CrowdStrikeEnvelope} from '../../core/types';
+import type { HttpClient } from '../../core/http-client';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import * as requests from './real-time-response.requests';
 import {
   mapRawCommandExecuteResponse,

@@ -8,12 +8,12 @@ export interface SensorInstallerSearchParams {
 export interface SensorInstallerIdSearchResult {
   /** Sensor installers are identified by their sha256 hash. */
   ids: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface SensorInstallerSearchResult {
   installers: SensorInstallerDetails[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface SensorInstallerDetails {

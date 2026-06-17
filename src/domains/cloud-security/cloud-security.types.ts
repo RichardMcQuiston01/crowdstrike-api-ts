@@ -7,7 +7,7 @@ export interface CloudResourceSearchParams {
 
 export interface CloudResourceIdSearchResult {
   ids: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface CloudResourceDetails {
@@ -44,7 +44,7 @@ export interface ApplicationFindingsParams {
 
 export interface ApplicationFindingsResult {
   findings: ApplicationFinding[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface ApplicationFinding {

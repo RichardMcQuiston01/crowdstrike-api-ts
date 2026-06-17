@@ -10,7 +10,7 @@ export interface AlertSearchParams {
 
 export interface AlertSearchResult {
   compositeIds: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 /** Friendlier, camelCased shape of a CrowdStrike alert (DetectsExternalAlert). */
@@ -45,5 +45,5 @@ export interface UpdateAlertStatusParams {
 
 export interface UpdateAlertParams {
   compositeIds: string[];
-  actionParameters: Array<{name: string; value: string}>;
+  actionParameters: Array<{ name: string; value: string }>;
 }

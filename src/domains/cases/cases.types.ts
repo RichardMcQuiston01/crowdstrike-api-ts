@@ -9,7 +9,7 @@ export interface CaseSearchParams {
 
 export interface CaseSearchResult {
   caseIds: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 /**

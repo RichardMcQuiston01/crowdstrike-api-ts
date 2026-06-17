@@ -1,4 +1,4 @@
-import type {CrowdStrikeErrorDetail} from './types';
+import type { CrowdStrikeErrorDetail } from './types';
 
 /** Thrown when CrowdStrike responds with a non-2xx status. */
 export class CrowdStrikeApiError extends Error {
@@ -36,7 +36,7 @@ export class CrowdStrikeApiError extends Error {
     requestPath: string;
     errors: CrowdStrikeErrorDetail[];
   }): string {
-    const detail = params.errors.map(e => e.message).join('; ');
+    const detail = params.errors.map((e) => e.message).join('; ');
     return `CrowdStrike API request to ${params.requestPath} failed with status ${params.status}${detail ? `: ${detail}` : ''}`;
   }
 }
@@ -46,7 +46,11 @@ export class CrowdStrikeNetworkError extends Error {
   readonly requestPath: string;
   readonly cause?: unknown;
 
-  constructor(params: {requestPath: string; message: string; cause?: unknown}) {
+  constructor(params: {
+    requestPath: string;
+    message: string;
+    cause?: unknown;
+  }) {
     super(params.message);
     this.name = 'CrowdStrikeNetworkError';
     this.requestPath = params.requestPath;

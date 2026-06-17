@@ -1,4 +1,4 @@
-import type {RequestOptions} from '../../core/http-client';
+import type { RequestOptions } from '../../core/http-client';
 import type {
   HostGroupSearchParams,
   CreateHostGroupParams,
@@ -26,7 +26,7 @@ export function buildGetDetailsRequest(ids: string[]): RequestOptions {
   return {
     method: 'GET',
     path: '/devices/entities/host-groups/v1',
-    query: {ids},
+    query: { ids },
   };
 }
 
@@ -72,7 +72,7 @@ export function buildDeleteRequest(ids: string[]): RequestOptions {
   return {
     method: 'DELETE',
     path: '/devices/entities/host-groups/v1',
-    query: {ids},
+    query: { ids },
   };
 }
 
@@ -120,7 +120,7 @@ export function buildPerformActionRequest(
     },
     body: {
       ids: params.groupIds,
-      action_parameters: [{name: 'filter', value: params.filter}],
+      action_parameters: [{ name: 'filter', value: params.filter }],
     },
   };
 }

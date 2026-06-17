@@ -1,4 +1,4 @@
-import type {HostGroupDetails, HostGroupType} from './host-groups.types';
+import type { HostGroupDetails, HostGroupType } from './host-groups.types';
 
 /** Raw wire shape of a CrowdStrike host group entity (HostGroupsHostGroupV1). */
 export interface RawHostGroup {

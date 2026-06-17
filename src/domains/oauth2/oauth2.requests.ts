@@ -1,5 +1,5 @@
-import type {RequestOptions} from '../../core/http-client';
-import type {OAuth2TokenParams} from './oauth2.types';
+import type { RequestOptions } from '../../core/http-client';
+import type { OAuth2TokenParams } from './oauth2.types';
 
 export function buildCreateTokenRequest(
   params: OAuth2TokenParams,

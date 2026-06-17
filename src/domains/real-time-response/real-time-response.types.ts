@@ -25,7 +25,7 @@ export interface ListSessionsParams {
 
 export interface ListSessionsResult {
   sessionIds: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface ExecuteCommandParams {

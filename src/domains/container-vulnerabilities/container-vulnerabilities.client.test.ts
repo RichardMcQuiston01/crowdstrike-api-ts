@@ -1,11 +1,11 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {ContainerVulnerabilitiesClient} from './container-vulnerabilities.client';
-import type {HttpClient} from '../../core/http-client';
+import { describe, it, expect, mock } from 'bun:test';
+import { ContainerVulnerabilitiesClient } from './container-vulnerabilities.client';
+import type { HttpClient } from '../../core/http-client';
 import searchFixture from './__fixtures__/search-vulnerabilities-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('ContainerVulnerabilitiesClient', () => {
@@ -14,7 +14,7 @@ describe('ContainerVulnerabilitiesClient', () => {
       const http = fakeHttpClient(searchFixture);
       const vulns = new ContainerVulnerabilitiesClient(http);
 
-      const result = await vulns.search({filter: "severity:'Critical'"});
+      const result = await vulns.search({ filter: "severity:'Critical'" });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -38,20 +38,20 @@ describe('ContainerVulnerabilitiesClient', () => {
         {
           resources: [searchFixture.resources[0]],
           errors: [],
-          meta: {pagination: {offset: 0, limit: 1, total: 2}},
+          meta: { pagination: { offset: 0, limit: 1, total: 2 } },
         },
         {
           resources: [
-            {...searchFixture.resources[0], cve_id: 'CVE-2026-99999'},
+            { ...searchFixture.resources[0], cve_id: 'CVE-2026-99999' },
           ],
           errors: [],
-          meta: {pagination: {offset: 1, limit: 1, total: 2}},
+          meta: { pagination: { offset: 1, limit: 1, total: 2 } },
         },
       );
       const vulns = new ContainerVulnerabilitiesClient(http);
 
       const cveIds: string[] = [];
-      for await (const vuln of vulns.searchAll({limit: 1})) {
+      for await (const vuln of vulns.searchAll({ limit: 1 })) {
         cveIds.push(vuln.cveId);
       }
 
@@ -64,12 +64,16 @@ describe('ContainerVulnerabilitiesClient', () => {
       const http = fakeHttpClient(searchFixture);
       const vulns = new ContainerVulnerabilitiesClient(http);
 
-      const result = await vulns.getByCve({cveId: 'CVE-2026-12345'});
+      const result = await vulns.getByCve({ cveId: 'CVE-2026-12345' });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
         path: '/container-security/combined/vulnerabilities/info/v1',
-        query: {cve_id: 'CVE-2026-12345', limit: undefined, offset: undefined},
+        query: {
+          cve_id: 'CVE-2026-12345',
+          limit: undefined,
+          offset: undefined,
+        },
       });
       expect(result[0].cveId).toBe('CVE-2026-12345');
     });

@@ -1,7 +1,7 @@
-import type {FalconClientConfig} from '../config';
-import type {Oauth2Client} from '../domains/oauth2/oauth2.client';
-import {CrowdStrikeAuthConfigError} from './errors';
-import type {TokenProvider} from './http-client';
+import type { FalconClientConfig } from '../config';
+import type { Oauth2Client } from '../domains/oauth2/oauth2.client';
+import { CrowdStrikeAuthConfigError } from './errors';
+import type { TokenProvider } from './http-client';
 
 /** Refetch this many ms before the real expiry to avoid races with in-flight requests. */
 const EXPIRY_SKEW_MS = 60_000;

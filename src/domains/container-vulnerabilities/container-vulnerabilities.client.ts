@@ -1,6 +1,9 @@
-import type {HttpClient} from '../../core/http-client';
-import {paginateOffset, type OffsetPageFetcher} from '../../core/pagination';
-import type {CrowdStrikeEnvelope, OffsetPaginationMeta} from '../../core/types';
+import type { HttpClient } from '../../core/http-client';
+import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
+import type {
+  CrowdStrikeEnvelope,
+  OffsetPaginationMeta,
+} from '../../core/types';
 import * as requests from './container-vulnerabilities.requests';
 import {
   mapRawVulnerability,
@@ -45,10 +48,10 @@ export class ContainerVulnerabilitiesClient {
       offset,
       limit,
     ) => {
-      const page = await this.search({...params, offset, limit});
-      return {resources: page.vulnerabilities, pagination: page.pagination};
+      const page = await this.search({ ...params, offset, limit });
+      return { resources: page.vulnerabilities, pagination: page.pagination };
     };
-    return paginateOffset(fetchPage, {pageSize: params.limit ?? 100});
+    return paginateOffset(fetchPage, { pageSize: params.limit ?? 100 });
   }
 
   /** Returns CVE-level info (across all affected images) for a single CVE. */

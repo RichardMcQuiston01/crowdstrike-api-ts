@@ -1,5 +1,5 @@
-import type {RequestOptions} from '../../core/http-client';
-import type {IntelIndicatorSearchParams} from './intel.types';
+import type { RequestOptions } from '../../core/http-client';
+import type { IntelIndicatorSearchParams } from './intel.types';
 
 function buildSearchQuery(params: IntelIndicatorSearchParams) {
   return {
@@ -37,6 +37,6 @@ export function buildGetDetailsRequest(ids: string[]): RequestOptions {
   return {
     method: 'POST',
     path: '/intel/entities/indicators/GET/v1',
-    body: {ids},
+    body: { ids },
   };
 }

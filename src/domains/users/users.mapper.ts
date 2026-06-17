@@ -1,4 +1,4 @@
-import type {UserDetails, UserRole, CombinedUserRole} from './users.types';
+import type { UserDetails, UserRole, CombinedUserRole } from './users.types';
 
 /** Raw wire shape of a CrowdStrike user entity (DomainUser). */
 export interface RawUser {

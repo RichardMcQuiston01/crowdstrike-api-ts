@@ -1,4 +1,4 @@
-import type {AlertDetails} from './alerts.types';
+import type { AlertDetails } from './alerts.types';
 
 /** Raw wire shape of a CrowdStrike alert (DetectsExternalAlert) - subset used here. */
 export interface RawAlert {

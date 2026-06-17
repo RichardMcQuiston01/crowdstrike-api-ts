@@ -1,7 +1,13 @@
-import type {HttpClient} from '../../core/http-client';
-import type {CrowdStrikeEnvelope, OffsetPaginationMeta} from '../../core/types';
-import {mapRawDeviceToHostDetails, type RawDevice} from '../hosts/hosts.mapper';
-import type {HostDetails} from '../hosts/hosts.types';
+import type { HttpClient } from '../../core/http-client';
+import type {
+  CrowdStrikeEnvelope,
+  OffsetPaginationMeta,
+} from '../../core/types';
+import {
+  mapRawDeviceToHostDetails,
+  type RawDevice,
+} from '../hosts/hosts.mapper';
+import type { HostDetails } from '../hosts/hosts.types';
 import * as requests from './host-groups.requests';
 import {
   mapRawHostGroupToDetails,

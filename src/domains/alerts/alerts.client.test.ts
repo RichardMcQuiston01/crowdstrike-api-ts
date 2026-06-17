@@ -1,12 +1,12 @@
-import {describe, it, expect, mock} from 'bun:test';
-import {AlertsClient} from './alerts.client';
-import type {HttpClient} from '../../core/http-client';
+import { describe, it, expect, mock } from 'bun:test';
+import { AlertsClient } from './alerts.client';
+import type { HttpClient } from '../../core/http-client';
 import queryAlertsFixture from './__fixtures__/query-alerts-response.json';
 import alertDetailsFixture from './__fixtures__/alert-details-response.json';
 
 function fakeHttpClient(...responses: unknown[]): HttpClient {
   const request = mock(async () => responses.shift());
-  return {request} as unknown as HttpClient;
+  return { request } as unknown as HttpClient;
 }
 
 describe('AlertsClient', () => {
@@ -15,7 +15,7 @@ describe('AlertsClient', () => {
       const http = fakeHttpClient(queryAlertsFixture);
       const alerts = new AlertsClient(http);
 
-      const result = await alerts.search({filter: "status:'new'"});
+      const result = await alerts.search({ filter: "status:'new'" });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'GET',
@@ -44,7 +44,7 @@ describe('AlertsClient', () => {
       expect(http.request).toHaveBeenCalledWith({
         method: 'POST',
         path: '/alerts/entities/alerts/v2',
-        body: {composite_ids: ['comp-1']},
+        body: { composite_ids: ['comp-1'] },
       });
       expect(alert.compositeId).toBe('comp-1');
       expect(alert.severity).toBe(80);
@@ -58,20 +58,20 @@ describe('AlertsClient', () => {
         {
           resources: [alertDetailsFixture.resources[0]],
           errors: [],
-          meta: {pagination: {after: 'cursor-2', limit: 1, total: 2}},
+          meta: { pagination: { after: 'cursor-2', limit: 1, total: 2 } },
         },
         {
           resources: [
-            {...alertDetailsFixture.resources[0], composite_id: 'comp-2'},
+            { ...alertDetailsFixture.resources[0], composite_id: 'comp-2' },
           ],
           errors: [],
-          meta: {pagination: {after: undefined, limit: 1, total: 2}},
+          meta: { pagination: { after: undefined, limit: 1, total: 2 } },
         },
       );
       const alerts = new AlertsClient(http);
 
       const ids: string[] = [];
-      for await (const alert of alerts.searchCombinedAll({limit: 1})) {
+      for await (const alert of alerts.searchCombinedAll({ limit: 1 })) {
         ids.push(alert.compositeId);
       }
 
@@ -79,12 +79,22 @@ describe('AlertsClient', () => {
       expect(http.request).toHaveBeenNthCalledWith(1, {
         method: 'POST',
         path: '/alerts/combined/alerts/v1',
-        body: {after: undefined, filter: undefined, limit: 1, sort: undefined},
+        body: {
+          after: undefined,
+          filter: undefined,
+          limit: 1,
+          sort: undefined,
+        },
       });
       expect(http.request).toHaveBeenNthCalledWith(2, {
         method: 'POST',
         path: '/alerts/combined/alerts/v1',
-        body: {after: 'cursor-2', filter: undefined, limit: 1, sort: undefined},
+        body: {
+          after: 'cursor-2',
+          filter: undefined,
+          limit: 1,
+          sort: undefined,
+        },
       });
     });
   });
@@ -94,14 +104,14 @@ describe('AlertsClient', () => {
       const http = fakeHttpClient(undefined);
       const alerts = new AlertsClient(http);
 
-      await alerts.updateStatus({compositeIds: ['comp-1'], status: 'closed'});
+      await alerts.updateStatus({ compositeIds: ['comp-1'], status: 'closed' });
 
       expect(http.request).toHaveBeenCalledWith({
         method: 'PATCH',
         path: '/alerts/entities/alerts/v3',
         body: {
           composite_ids: ['comp-1'],
-          action_parameters: [{name: 'update_status', value: 'closed'}],
+          action_parameters: [{ name: 'update_status', value: 'closed' }],
         },
       });
     });
@@ -114,7 +124,7 @@ describe('AlertsClient', () => {
 
       await alerts.update({
         compositeIds: ['comp-1'],
-        actionParameters: [{name: 'assign_to_uuid', value: 'uuid-1'}],
+        actionParameters: [{ name: 'assign_to_uuid', value: 'uuid-1' }],
       });
 
       expect(http.request).toHaveBeenCalledWith({
@@ -122,7 +132,7 @@ describe('AlertsClient', () => {
         path: '/alerts/entities/alerts/v3',
         body: {
           composite_ids: ['comp-1'],
-          action_parameters: [{name: 'assign_to_uuid', value: 'uuid-1'}],
+          action_parameters: [{ name: 'assign_to_uuid', value: 'uuid-1' }],
         },
       });
     });

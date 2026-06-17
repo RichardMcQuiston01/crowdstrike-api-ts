@@ -1,9 +1,9 @@
-import type {HostsClient} from '../domains/hosts/hosts.client';
-import type {HostGroupsClient} from '../domains/host-groups/host-groups.client';
-import type {CasesClient} from '../domains/cases/cases.client';
-import type {AlertsClient} from '../domains/alerts/alerts.client';
-import {HostsWithGroupsComposite} from './hosts-with-groups';
-import {CaseReportComposite} from './case-report';
+import type { HostsClient } from '../domains/hosts/hosts.client';
+import type { HostGroupsClient } from '../domains/host-groups/host-groups.client';
+import type { CasesClient } from '../domains/cases/cases.client';
+import type { AlertsClient } from '../domains/alerts/alerts.client';
+import { HostsWithGroupsComposite } from './hosts-with-groups';
+import { CaseReportComposite } from './case-report';
 
 export * from './hosts-with-groups';
 export * from './case-report';

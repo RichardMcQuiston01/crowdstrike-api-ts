@@ -7,7 +7,7 @@ export interface UserSearchParams {
 
 export interface UserIdSearchResult {
   ids: string[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }
 
 export interface UserDetails {
@@ -104,5 +104,5 @@ export interface CombinedUserRole {
 
 export interface CombinedUserRolesResult {
   roles: CombinedUserRole[];
-  pagination: {offset: number; limit: number; total: number};
+  pagination: { offset: number; limit: number; total: number };
 }

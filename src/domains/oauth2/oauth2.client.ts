@@ -1,6 +1,6 @@
-import type {HttpClient} from '../../core/http-client';
-import {buildCreateTokenRequest} from './oauth2.requests';
-import type {OAuth2TokenParams, OAuth2TokenResult} from './oauth2.types';
+import type { HttpClient } from '../../core/http-client';
+import { buildCreateTokenRequest } from './oauth2.requests';
+import type { OAuth2TokenParams, OAuth2TokenResult } from './oauth2.types';
 
 /** Raw wire shape of CrowdStrike's /oauth2/token response (DomainAccessTokenResponseV1). */
 interface RawTokenResponse {
