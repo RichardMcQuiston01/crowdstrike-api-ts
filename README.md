@@ -6,6 +6,10 @@ tool — without requiring `bun` at runtime.
 
 Ships as a dual ESM/CJS package with bundled `.d.ts` types, so it works with any modern module system.
 
+## Support
+
+If this library saved you some reverse-engineering, consider [buying me a coffee](https://www.paypal.com/ncp/payment/VDTESHTRR7684). ☕
+
 ## Requirements
 
 - **Node.js** 18 or later (uses the native `fetch` API; earlier versions require a polyfill via the `fetch` config
@@ -27,7 +31,10 @@ bun add @richardmcquiston01/crowdstrike-ts-api
 Instantiate `FalconClient` with a `FalconClientConfig` object:
 
 ```ts
-import { FalconClient, FalconRegion } from '@richardmcquiston01/crowdstrike-ts-api';
+import {
+  FalconClient,
+  FalconRegion,
+} from '@richardmcquiston01/crowdstrike-ts-api';
 
 const client = new FalconClient({
   clientId: process.env.FALCON_CLIENT_ID!,
@@ -38,22 +45,22 @@ const client = new FalconClient({
 
 ### `FalconClientConfig`
 
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `clientId` | `string` | yes | OAuth2 client ID from the Falcon console |
-| `clientSecret` | `string` | yes | OAuth2 client secret |
-| `baseUrl` | `FalconRegion \| string` | no | API base URL. Defaults to `FalconRegion.US1` |
-| `memberCid` | `string` | no | MSSP child CID to act on behalf of |
-| `fetch` | `typeof fetch` | no | Custom fetch implementation (useful for proxies or testing) |
-| `timeoutMs` | `number` | no | Per-request timeout in milliseconds. Defaults to `30000` |
+| Property       | Type                     | Required | Description                                                 |
+| -------------- | ------------------------ | -------- | ----------------------------------------------------------- |
+| `clientId`     | `string`                 | yes      | OAuth2 client ID from the Falcon console                    |
+| `clientSecret` | `string`                 | yes      | OAuth2 client secret                                        |
+| `baseUrl`      | `FalconRegion \| string` | no       | API base URL. Defaults to `FalconRegion.US1`                |
+| `memberCid`    | `string`                 | no       | MSSP child CID to act on behalf of                          |
+| `fetch`        | `typeof fetch`           | no       | Custom fetch implementation (useful for proxies or testing) |
+| `timeoutMs`    | `number`                 | no       | Per-request timeout in milliseconds. Defaults to `30000`    |
 
 ### `FalconRegion`
 
-| Value | Base URL |
-|---|---|
-| `FalconRegion.US1` | `https://api.crowdstrike.com` |
-| `FalconRegion.US2` | `https://api.us-2.crowdstrike.com` |
-| `FalconRegion.EU1` | `https://api.eu-1.crowdstrike.com` |
+| Value                 | Base URL                                 |
+| --------------------- | ---------------------------------------- |
+| `FalconRegion.US1`    | `https://api.crowdstrike.com`            |
+| `FalconRegion.US2`    | `https://api.us-2.crowdstrike.com`       |
+| `FalconRegion.EU1`    | `https://api.eu-1.crowdstrike.com`       |
 | `FalconRegion.USGOV1` | `https://api.laggar.gcw.crowdstrike.com` |
 
 ## Usage
@@ -75,31 +82,31 @@ const alerts = await client.alerts.combinedAlerts({ limit: 50 });
 import { collectAll } from '@richardmcquiston01/crowdstrike-ts-api';
 
 const allAssets = await collectAll(
-  client.discover.searchCombinedAll({ filter: "entity_type:'managed'" })
+  client.discover.searchCombinedAll({ filter: "entity_type:'managed'" }),
 );
 ```
 
 ## Available domains
 
-| Client property | CrowdStrike API area |
-|---|---|
-| `client.hosts` | Device/host inventory |
-| `client.hostGroups` | Host group management |
-| `client.alerts` | Unified alerts (replaces the decommissioned Detections API) |
-| `client.cases` | Case management |
-| `client.realTimeResponse` | Real-time response sessions |
-| `client.realTimeResponseAdmin` | RTR admin commands |
-| `client.containerVulnerabilities` | Container image vulnerabilities |
-| `client.intel` | Threat intelligence |
-| `client.ioc` | Indicators of compromise |
-| `client.cloudSecurity` | Cloud security posture |
-| `client.identityProtection` | Identity-based detections |
-| `client.sensorDownload` | Sensor installer downloads |
-| `client.preventionPolicies` | Prevention policy management |
-| `client.users` | User and role management |
-| `client.discover` | Asset discovery |
-| `client.customIoa` | Custom IOA rule management |
-| `client.custom` | Multi-domain composite workflows |
+| Client property                   | CrowdStrike API area                                        |
+| --------------------------------- | ----------------------------------------------------------- |
+| `client.hosts`                    | Device/host inventory                                       |
+| `client.hostGroups`               | Host group management                                       |
+| `client.alerts`                   | Unified alerts (replaces the decommissioned Detections API) |
+| `client.cases`                    | Case management                                             |
+| `client.realTimeResponse`         | Real-time response sessions                                 |
+| `client.realTimeResponseAdmin`    | RTR admin commands                                          |
+| `client.containerVulnerabilities` | Container image vulnerabilities                             |
+| `client.intel`                    | Threat intelligence                                         |
+| `client.ioc`                      | Indicators of compromise                                    |
+| `client.cloudSecurity`            | Cloud security posture                                      |
+| `client.identityProtection`       | Identity-based detections                                   |
+| `client.sensorDownload`           | Sensor installer downloads                                  |
+| `client.preventionPolicies`       | Prevention policy management                                |
+| `client.users`                    | User and role management                                    |
+| `client.discover`                 | Asset discovery                                             |
+| `client.customIoa`                | Custom IOA rule management                                  |
+| `client.custom`                   | Multi-domain composite workflows                            |
 
 ## Error handling
 
@@ -117,8 +124,12 @@ try {
 } catch (err) {
   if (err instanceof CrowdStrikeApiError) {
     console.error(`API error ${err.status} on ${err.requestPath}`);
-    if (err.isAuthError) { /* re-check credentials */ }
-    if (err.isRateLimited) { /* back off and retry */ }
+    if (err.isAuthError) {
+      /* re-check credentials */
+    }
+    if (err.isRateLimited) {
+      /* back off and retry */
+    }
   } else if (err instanceof CrowdStrikeNetworkError) {
     console.error(`Network failure: ${err.message}`);
   } else if (err instanceof CrowdStrikeAuthConfigError) {
@@ -127,10 +138,10 @@ try {
 }
 ```
 
-| Class | When thrown |
-|---|---|
-| `CrowdStrikeApiError` | Non-2xx HTTP response from the Falcon API |
-| `CrowdStrikeNetworkError` | DNS failure, connection reset, or request timeout |
+| Class                        | When thrown                                         |
+| ---------------------------- | --------------------------------------------------- |
+| `CrowdStrikeApiError`        | Non-2xx HTTP response from the Falcon API           |
+| `CrowdStrikeNetworkError`    | DNS failure, connection reset, or request timeout   |
 | `CrowdStrikeAuthConfigError` | Missing or invalid credentials at construction time |
 
 ## Resources
