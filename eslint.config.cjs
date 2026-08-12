@@ -10,6 +10,7 @@ module.exports = defineConfig([
       'coverage/**',
       '.remember/**',
       'tsup.config.ts',
+      'examples/**',
     ],
   },
 ]);
