@@ -52,7 +52,9 @@ jobs:
         # expected failure rather than a crash or a hang.
         run: |
           set +e
-          output="$(docker run --rm crowdstrike-ts-demo:ci)"
+          # Capture stderr too: the demo prints the credentials error via
+          # console.error (stderr), and we assert on that message below.
+          output="$(docker run --rm crowdstrike-ts-demo:ci 2>&1)"
           code=$?
           echo "$output"
           if [ "$code" -ne 1 ]; then
