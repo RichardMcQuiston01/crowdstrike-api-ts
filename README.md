@@ -86,6 +86,45 @@ const allAssets = await collectAll(
 );
 ```
 
+## Running the demo
+
+[`examples/demo.ts`](./examples/demo.ts) is a small, read-only script that exercises a few domains (hosts, alerts,
+users) against a real tenant — handy for smoke-testing credentials and seeing the friendly shapes this library
+returns. It is configured entirely through environment variables:
+
+| Variable               | Required | Description                                                    |
+| ---------------------- | -------- | -------------------------------------------------------------- |
+| `FALCON_CLIENT_ID`     | yes      | OAuth2 client ID from the Falcon console                       |
+| `FALCON_CLIENT_SECRET` | yes      | OAuth2 client secret                                           |
+| `FALCON_BASE_URL`      | no       | Region key (`US1`\|`US2`\|`EU1`\|`USGOV1`) or a raw base URL   |
+| `FALCON_MEMBER_CID`    | no       | MSSP child CID to act on behalf of                             |
+| `DEMO_LIMIT`           | no       | Page size for the sample queries (max 20, defaults to 5)       |
+
+Run it directly with [bun](https://bun.sh):
+
+```sh
+FALCON_CLIENT_ID=... FALCON_CLIENT_SECRET=... bun run examples/demo.ts
+```
+
+### In Docker
+
+No local toolchain required — the [`Dockerfile`](./Dockerfile) runs the demo with bun inside the container.
+
+```sh
+# 1. Provide credentials (either export them, or copy the template and edit it)
+cp .env.example .env   # then fill in FALCON_CLIENT_ID / FALCON_CLIENT_SECRET
+
+# 2a. With Docker Compose (reads .env automatically)
+docker compose run --rm demo
+
+# 2b. Or with plain Docker
+docker build -t crowdstrike-ts-demo .
+docker run --rm --env-file .env crowdstrike-ts-demo
+```
+
+The demo only issues read requests and catches per-domain failures, so a missing API scope surfaces as a skipped
+step rather than aborting the whole run.
+
 ## Available domains
 
 | Client property                   | CrowdStrike API area                                        |

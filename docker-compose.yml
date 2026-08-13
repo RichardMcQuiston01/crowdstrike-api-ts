@@ -1,0 +1,18 @@
+# Convenience wrapper for running the demo container.
+#
+#   cp .env.example .env      # then fill in your Falcon credentials
+#   docker compose run --rm demo
+#
+# Compose automatically loads variables from a local `.env` file, and the
+# bare names below forward them (or any values already in your shell) into
+# the container.
+services:
+  demo:
+    build: .
+    image: crowdstrike-ts-demo
+    environment:
+      - FALCON_CLIENT_ID
+      - FALCON_CLIENT_SECRET
+      - FALCON_BASE_URL
+      - FALCON_MEMBER_CID
+      - DEMO_LIMIT
