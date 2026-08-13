@@ -1,0 +1,76 @@
+name: Build demo image
+
+# Validates that the demo container image builds successfully. It does not push
+# the image anywhere and needs no credentials — building is the whole test.
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'docker-compose.yml'
+      - 'examples/**'
+      - 'src/**'
+      - 'package.json'
+      - 'bun.lock'
+      - 'tsconfig.json'
+      - '.github/workflows/docker-demo.yml'
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'docker-compose.yml'
+      - 'examples/**'
+      - 'src/**'
+      - 'package.json'
+      - 'bun.lock'
+      - 'tsconfig.json'
+      - '.github/workflows/docker-demo.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build demo image
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # No git operations happen after checkout, so don't leave the auth
+          # token in .git/config where it could reach the build context/cache.
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build demo image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: crowdstrike-ts-demo:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke-test the image (no credentials -> graceful exit)
+        # The demo exits 1 when credentials are absent; assert that clear,
+        # expected failure rather than a crash or a hang.
+        run: |
+          set +e
+          # Capture stderr too: the demo prints the credentials error via
+          # console.error (stderr), and we assert on that message below.
+          # Bound the run so a hang fails the step promptly instead of holding
+          # the runner until the job timeout.
+          output="$(timeout --foreground 30s docker run --rm crowdstrike-ts-demo:ci 2>&1)"
+          code=$?
+          echo "$output"
+          if [ "$code" -ne 1 ]; then
+            echo "::error::expected exit code 1 without credentials, got $code"
+            exit 1
+          fi
+          echo "$output" | grep -q "Missing credentials" || {
+            echo "::error::expected a 'Missing credentials' message"
+            exit 1
+          }
