@@ -13,6 +13,7 @@ on:
       - 'src/**'
       - 'package.json'
       - 'bun.lock'
+      - 'tsconfig.json'
       - '.github/workflows/docker-demo.yml'
   pull_request:
     paths:
@@ -23,6 +24,7 @@ on:
       - 'src/**'
       - 'package.json'
       - 'bun.lock'
+      - 'tsconfig.json'
       - '.github/workflows/docker-demo.yml'
   workflow_dispatch:
 
@@ -30,9 +32,14 @@ jobs:
   build:
     name: Build demo image
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # No git operations happen after checkout, so don't leave the auth
+          # token in .git/config where it could reach the build context/cache.
+          persist-credentials: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -54,7 +61,9 @@ jobs:
           set +e
           # Capture stderr too: the demo prints the credentials error via
           # console.error (stderr), and we assert on that message below.
-          output="$(docker run --rm crowdstrike-ts-demo:ci 2>&1)"
+          # Bound the run so a hang fails the step promptly instead of holding
+          # the runner until the job timeout.
+          output="$(timeout --foreground 30s docker run --rm crowdstrike-ts-demo:ci 2>&1)"
           code=$?
           echo "$output"
           if [ "$code" -ne 1 ]; then
