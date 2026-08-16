@@ -8,7 +8,7 @@ Ships as a dual ESM/CJS package with bundled `.d.ts` types, so it works with any
 
 ## Support
 
-If this library saved you some reverse-engineering, consider [buying me a coffee](https://www.paypal.com/ncp/payment/VDTESHTRR7684). ☕
+If this library saved you some reverse-engineering, consider [buying me a coffee](https://donate.stripe.com/00w5kD3Gj1Xo9v7gVOcs800). ☕
 
 ## Requirements
 
