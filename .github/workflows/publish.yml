@@ -1,0 +1,68 @@
+name: Publish to npm
+
+# Publishes the package to npm when a GitHub Release is published. The release
+# tag (e.g. v0.2.3) must match the version in package.json, or the job fails
+# before anything is published.
+#
+# Requires an `NPM_TOKEN` repository secret (an npm "Automation" access token
+# with publish rights). Add it under Settings → Secrets and variables → Actions.
+on:
+  release:
+    types: [published]
+  # Safety net: allows re-running a publish from the Actions tab if a release
+  # publish failed. It still enforces the version guard below.
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # enables npm provenance
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Verify release tag matches package.json version
+        # On workflow_dispatch there is no release tag, so skip the comparison.
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [ -z "$TAG" ]; then
+            echo "No release tag (manual dispatch) — skipping tag/version check."
+            exit 0
+          fi
+          tag_version="${TAG#v}"
+          pkg_version="$(node -p "require('./package.json').version")"
+          echo "release tag: $tag_version | package.json: $pkg_version"
+          if [ "$tag_version" != "$pkg_version" ]; then
+            echo "::error::Release tag ($tag_version) does not match package.json version ($pkg_version)"
+            exit 1
+          fi
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Clean, typecheck, lint, test, build
+        run: bun run prepublishOnly
+
+      - name: Publish to npm
+        # Scripts already ran via prepublishOnly above; --ignore-scripts stops
+        # npm from re-running the whole gate a second time on publish.
+        run: npm publish --provenance --access public --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
