@@ -6,9 +6,13 @@ tool — without requiring `bun` at runtime.
 
 Ships as a dual ESM/CJS package with bundled `.d.ts` types, so it works with any modern module system.
 
-## Support
+## ❤️ Support this project
 
-If this library saved you some reverse-engineering, consider [buying me a coffee](https://donate.stripe.com/00w5kD3Gj1Xo9v7gVOcs800). ☕
+If this app, code, or repository has helped you or someone you know, please consider donating. I appreciate any help to offset the costs of development and/or AI Credits.
+
+[![Donate via Stripe](./donate.svg)](https://donate.stripe.com/00w5kD3Gj1Xo9v7gVOcs800)
+
+[**Donate via Stripe →**](https://donate.stripe.com/00w5kD3Gj1Xo9v7gVOcs800)
 
 ## Requirements
 
