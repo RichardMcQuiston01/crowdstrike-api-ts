@@ -1,4 +1,5 @@
 import type { HttpClient } from '../../core/http-client';
+import { chunkedAction, chunkedLookup } from '../../core/chunk';
 import type { ActionResult } from '../../core/resources';
 import { requestAction, requestFirst } from '../../core/resources';
 import type {
@@ -77,10 +78,12 @@ export class CustomIoaClient {
   }
 
   async getRuleGroups(ids: string[]): Promise<CustomIoaRuleGroupDetails[]> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawCustomIoaRuleGroup>
-    >(requests.buildGetRuleGroupsRequest(ids));
-    return raw.resources.map(mapRawCustomIoaRuleGroup);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawCustomIoaRuleGroup>
+      >(requests.buildGetRuleGroupsRequest(idChunk));
+      return raw.resources.map(mapRawCustomIoaRuleGroup);
+    });
   }
 
   async createRuleGroup(
@@ -109,9 +112,11 @@ export class CustomIoaClient {
     ids: string[],
     comment?: string,
   ): Promise<ActionResult> {
-    return requestAction(
-      this.http,
-      requests.buildDeleteRuleGroupsRequest(ids, comment),
+    return chunkedAction(ids, (idChunk) =>
+      requestAction(
+        this.http,
+        requests.buildDeleteRuleGroupsRequest(idChunk, comment),
+      ),
     );
   }
 
@@ -125,18 +130,22 @@ export class CustomIoaClient {
   }
 
   async getRules(ids: string[]): Promise<CustomIoaRuleDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawCustomIoaRule>>(
-      requests.buildGetRulesRequest(ids),
-    );
-    return raw.resources.map(mapRawCustomIoaRule);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawCustomIoaRule>
+      >(requests.buildGetRulesRequest(idChunk));
+      return raw.resources.map(mapRawCustomIoaRule);
+    });
   }
 
   /** Fetches rules by id, optionally with an embedded `cid` and/or `version` (e.g. `cid:id:version`). */
   async getRulesByVersion(ids: string[]): Promise<CustomIoaRuleDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawCustomIoaRule>>(
-      requests.buildGetRulesByVersionRequest(ids),
-    );
-    return raw.resources.map(mapRawCustomIoaRule);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawCustomIoaRule>
+      >(requests.buildGetRulesByVersionRequest(idChunk));
+      return raw.resources.map(mapRawCustomIoaRule);
+    });
   }
 
   async createRule(params: CreateRuleParams): Promise<CustomIoaRuleDetails> {
@@ -173,9 +182,11 @@ export class CustomIoaClient {
     ids: string[],
     comment?: string,
   ): Promise<ActionResult> {
-    return requestAction(
-      this.http,
-      requests.buildDeleteRulesRequest(ruleGroupId, ids, comment),
+    return chunkedAction(ids, (idChunk) =>
+      requestAction(
+        this.http,
+        requests.buildDeleteRulesRequest(ruleGroupId, idChunk, comment),
+      ),
     );
   }
 
@@ -198,10 +209,12 @@ export class CustomIoaClient {
   }
 
   async getPatterns(ids: string[]): Promise<PatternSeverity[]> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawPatternSeverity>
-    >(requests.buildGetPatternsRequest(ids));
-    return raw.resources.map(mapRawPatternSeverity);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawPatternSeverity>
+      >(requests.buildGetPatternsRequest(idChunk));
+      return raw.resources.map(mapRawPatternSeverity);
+    });
   }
 
   async searchPlatformIds(
@@ -214,10 +227,12 @@ export class CustomIoaClient {
   }
 
   async getPlatforms(ids: string[]): Promise<IoaPlatform[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawIoaPlatform>>(
-      requests.buildGetPlatformsRequest(ids),
-    );
-    return raw.resources.map(mapRawIoaPlatform);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<CrowdStrikeEnvelope<RawIoaPlatform>>(
+        requests.buildGetPlatformsRequest(idChunk),
+      );
+      return raw.resources.map(mapRawIoaPlatform);
+    });
   }
 
   async searchRuleTypeIds(
@@ -230,9 +245,11 @@ export class CustomIoaClient {
   }
 
   async getRuleTypes(ids: string[]): Promise<RuleTypeDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawRuleType>>(
-      requests.buildGetRuleTypesRequest(ids),
-    );
-    return raw.resources.map(mapRawRuleType);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<CrowdStrikeEnvelope<RawRuleType>>(
+        requests.buildGetRuleTypesRequest(idChunk),
+      );
+      return raw.resources.map(mapRawRuleType);
+    });
   }
 }

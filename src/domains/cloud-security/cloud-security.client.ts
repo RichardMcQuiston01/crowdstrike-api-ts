@@ -1,4 +1,5 @@
 import type { HttpClient } from '../../core/http-client';
+import { chunkedLookup } from '../../core/chunk';
 import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
 import type {
   CrowdStrikeEnvelope,
@@ -62,10 +63,12 @@ export class CloudSecurityClient {
 
   /** Hydrates up to 100 resources at a time by ID. */
   async getDetails(ids: string[]): Promise<CloudResourceDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawCloudResource>>(
-      requests.buildGetDetailsRequest(ids),
-    );
-    return raw.resources.map(mapRawCloudResource);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawCloudResource>
+      >(requests.buildGetDetailsRequest(idChunk));
+      return raw.resources.map(mapRawCloudResource);
+    });
   }
 
   /** Returns application-level findings for a single resource. */

@@ -1,4 +1,5 @@
 import type { HttpClient } from '../../core/http-client';
+import { chunkedLookup } from '../../core/chunk';
 import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
 import type {
   CrowdStrikeEnvelope,
@@ -69,10 +70,16 @@ export class SensorDownloadClient {
   }
 
   async getDetails(ids: string[]): Promise<SensorInstallerDetails[]> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawSensorInstaller>
-    >(requests.buildGetDetailsRequest(ids));
-    return raw.resources.map(mapRawSensorInstaller);
+    return chunkedLookup(
+      ids,
+      async (idChunk) => {
+        const raw = await this.http.request<
+          CrowdStrikeEnvelope<RawSensorInstaller>
+        >(requests.buildGetDetailsRequest(idChunk));
+        return raw.resources.map(mapRawSensorInstaller);
+      },
+      50,
+    );
   }
 
   /** Returns the customer checksum ID(s) (CCID) needed to configure an installer. */

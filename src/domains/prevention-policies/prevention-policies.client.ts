@@ -1,4 +1,5 @@
 import type { HttpClient } from '../../core/http-client';
+import { chunkedAction, chunkedLookup } from '../../core/chunk';
 import type { ActionResult } from '../../core/resources';
 import { requestAction, requestFirst } from '../../core/resources';
 import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
@@ -89,10 +90,12 @@ export class PreventionPoliciesClient {
   }
 
   async getDetails(ids: string[]): Promise<PreventionPolicyDetails[]> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawPreventionPolicy>
-    >(requests.buildGetDetailsRequest(ids));
-    return raw.resources.map(mapRawPreventionPolicy);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawPreventionPolicy>
+      >(requests.buildGetDetailsRequest(idChunk));
+      return raw.resources.map(mapRawPreventionPolicy);
+    });
   }
 
   async create(
@@ -118,7 +121,9 @@ export class PreventionPoliciesClient {
   }
 
   async delete(ids: string[]): Promise<ActionResult> {
-    return requestAction(this.http, requests.buildDeleteRequest(ids));
+    return chunkedAction(ids, (idChunk) =>
+      requestAction(this.http, requests.buildDeleteRequest(idChunk)),
+    );
   }
 
   /** Enables/disables a policy, or adds/removes a host group or IOA rule group. */

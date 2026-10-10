@@ -328,4 +328,21 @@ describe('DiscoverClient', () => {
       expect(ids).toEqual(['app-1', 'app-2']);
     });
   });
+
+  describe('chunking large id lists', () => {
+    it('splits getHosts into 100-id requests', async () => {
+      const http = fakeHttpClient(searchHostsFixture, searchHostsFixture);
+      const discover = new DiscoverClient(http);
+
+      await discover.getHosts(
+        Array.from({ length: 150 }, (_, i) => `host-${i}`),
+      );
+
+      const calls = (http.request as unknown as ReturnType<typeof mock>).mock
+        .calls as unknown as Array<[{ query: { ids: string[] } }]>;
+      expect(calls.map(([options]) => options.query.ids.length)).toEqual([
+        100, 50,
+      ]);
+    });
+  });
 });
