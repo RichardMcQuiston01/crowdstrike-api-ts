@@ -1,9 +1,10 @@
 import type { HttpClient } from '../../core/http-client';
-import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import {
+  paginateOffset,
+  type OffsetPageFetcher,
+  readOffsetPagination,
+} from '../../core/pagination';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import * as requests from './container-vulnerabilities.requests';
 import {
   mapRawVulnerability,
@@ -29,14 +30,9 @@ export class ContainerVulnerabilitiesClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<RawVulnerability>>(
       requests.buildSearchRequest(params),
     );
-    const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
     return {
       vulnerabilities: raw.resources.map(mapRawVulnerability),
-      pagination: pagination ?? {
-        offset: 0,
-        limit: 0,
-        total: raw.resources.length,
-      },
+      pagination: readOffsetPagination(raw),
     };
   }
 

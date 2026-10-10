@@ -1,10 +1,11 @@
 import type { HttpClient } from '../../core/http-client';
 import { chunkedLookup } from '../../core/chunk';
-import { paginateCursor, type CursorPageFetcher } from '../../core/pagination';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import {
+  paginateCursor,
+  type CursorPageFetcher,
+  readOffsetPagination,
+} from '../../core/pagination';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import * as requests from './discover.requests';
 import {
   mapRawDiscoverHost,
@@ -41,17 +42,6 @@ interface DiscoverCombinedEnvelope<T> {
   meta?: { pagination?: { after?: string; limit: number; total: number } };
 }
 
-function toIdPagination(raw: CrowdStrikeEnvelope<unknown>): {
-  offset: number;
-  limit: number;
-  total: number;
-} {
-  const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
-  return (
-    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
-  );
-}
-
 function toCursorPagination(
   raw: DiscoverCombinedEnvelope<unknown>,
   limit: number,
@@ -74,7 +64,7 @@ export class DiscoverClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryHostsRequest(params),
     );
-    return { ids: raw.resources, pagination: toIdPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async queryApplicationIds(
@@ -83,7 +73,7 @@ export class DiscoverClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryApplicationsRequest(params),
     );
-    return { ids: raw.resources, pagination: toIdPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async queryAccountIds(
@@ -92,7 +82,7 @@ export class DiscoverClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryAccountsRequest(params),
     );
-    return { ids: raw.resources, pagination: toIdPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async queryLoginIds(
@@ -101,7 +91,7 @@ export class DiscoverClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryLoginsRequest(params),
     );
-    return { ids: raw.resources, pagination: toIdPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async getHosts(ids: string[]): Promise<DiscoverHostDetails[]> {

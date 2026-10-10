@@ -1,3 +1,6 @@
+import { CrowdStrikeApiError } from './errors';
+import type { CrowdStrikeEnvelope, OffsetPaginationMeta } from './types';
+
 /** Fetches one page of an offset/limit based list endpoint. */
 export type OffsetPageFetcher<T> = (
   offset: number,
@@ -33,7 +36,12 @@ export async function* paginateOffset<T>(
     }
 
     const nextOffset = offset + page.resources.length;
-    if (page.resources.length === 0 || nextOffset >= page.pagination.total) {
+    // A non-finite total would make `nextOffset >= total` false forever.
+    if (
+      page.resources.length === 0 ||
+      !Number.isFinite(page.pagination.total) ||
+      nextOffset >= page.pagination.total
+    ) {
       return;
     }
     offset = nextOffset;
@@ -54,7 +62,13 @@ export async function* paginateCursor<T>(
       yield item;
     }
 
-    if (page.resources.length === 0 || !page.pagination.after) {
+    // Stop on a missing token, and on one that did not advance (a repeated
+    // token with a non-empty page would otherwise loop forever).
+    if (
+      page.resources.length === 0 ||
+      !page.pagination.after ||
+      page.pagination.after === after
+    ) {
       return;
     }
     after = page.pagination.after;
@@ -68,4 +82,48 @@ export async function collectAll<T>(iter: AsyncIterable<T>): Promise<T[]> {
     results.push(item);
   }
   return results;
+}
+
+/**
+ * Reads the `{offset, limit, total}` block of an offset-paginated response.
+ * A response with no pagination block (or an empty one) falls back to a single
+ * page spanning `resources`. A block that is present but has no numeric
+ * `total` (e.g. a cursor-shaped `{after, limit}` object) is rejected rather
+ * than cast, since it would otherwise break offset pagination silently.
+ */
+export function readOffsetPagination(
+  raw: CrowdStrikeEnvelope<unknown>,
+  requestPath = 'the request',
+): OffsetPaginationMeta {
+  const resourceCount = raw.resources?.length ?? 0;
+  const pagination: unknown = raw.meta?.pagination;
+  if (
+    pagination === undefined ||
+    pagination === null ||
+    (typeof pagination === 'object' && Object.keys(pagination).length === 0)
+  ) {
+    return { offset: 0, limit: 0, total: resourceCount };
+  }
+
+  const candidate = pagination as Partial<
+    Record<keyof OffsetPaginationMeta, unknown>
+  >;
+  if (
+    typeof candidate.total !== 'number' ||
+    !Number.isFinite(candidate.total)
+  ) {
+    throw new CrowdStrikeApiError({
+      status: 200,
+      errors: [],
+      requestPath,
+      message:
+        `Expected offset pagination with a numeric "total" in the response to ${requestPath}, ` +
+        `but meta.pagination was ${JSON.stringify(pagination)}.`,
+    });
+  }
+  return {
+    offset: typeof candidate.offset === 'number' ? candidate.offset : 0,
+    limit: typeof candidate.limit === 'number' ? candidate.limit : 0,
+    total: candidate.total,
+  };
 }

@@ -218,7 +218,7 @@ export class HttpClient {
   private buildBody(
     options: RequestOptions,
     headers: Headers,
-  ): Bun.BodyInit | undefined {
+  ): RequestInit['body'] | undefined {
     if (options.body === undefined) {
       return undefined;
     }

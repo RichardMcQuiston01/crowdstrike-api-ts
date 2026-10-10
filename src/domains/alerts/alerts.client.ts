@@ -1,11 +1,14 @@
 import type { HttpClient } from '../../core/http-client';
 import type { ActionResult } from '../../core/resources';
 import { requestAction } from '../../core/resources';
-import { paginateCursor, type CursorPageFetcher } from '../../core/pagination';
+import {
+  paginateCursor,
+  type CursorPageFetcher,
+  readOffsetPagination,
+} from '../../core/pagination';
 import type {
   CrowdStrikeEnvelope,
   CursorPaginationMeta,
-  OffsetPaginationMeta,
 } from '../../core/types';
 import * as requests from './alerts.requests';
 import { mapRawAlertToDetails, type RawAlert } from './alerts.mapper';
@@ -26,14 +29,9 @@ export class AlertsClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchRequest(params),
     );
-    const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
     return {
       compositeIds: raw.resources,
-      pagination: pagination ?? {
-        offset: 0,
-        limit: 0,
-        total: raw.resources.length,
-      },
+      pagination: readOffsetPagination(raw),
     };
   }
 

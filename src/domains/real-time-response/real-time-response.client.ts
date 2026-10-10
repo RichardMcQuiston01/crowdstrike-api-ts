@@ -1,9 +1,7 @@
 import type { HttpClient } from '../../core/http-client';
+import { readOffsetPagination } from '../../core/pagination';
 import { requestFirst } from '../../core/resources';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import { RtrSequenceTracker } from './rtr-sequence';
 import * as requests from './real-time-response.requests';
 import {
@@ -51,14 +49,9 @@ export class RealTimeResponseClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildListSessionsRequest(params),
     );
-    const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
     return {
       sessionIds: raw.resources,
-      pagination: pagination ?? {
-        offset: 0,
-        limit: 0,
-        total: raw.resources.length,
-      },
+      pagination: readOffsetPagination(raw),
     };
   }
 
