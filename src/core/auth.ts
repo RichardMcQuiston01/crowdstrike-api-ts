@@ -8,7 +8,8 @@ const EXPIRY_SKEW_MS = 60_000;
 
 interface CachedToken {
   accessToken: string;
-  expiresAt: number;
+  /** Timestamp (ms) after which the token should be refetched; already skew-adjusted. */
+  refreshAt: number;
 }
 
 /**
@@ -18,6 +19,8 @@ interface CachedToken {
 export class OAuth2TokenManager implements TokenProvider {
   private cachedToken?: CachedToken;
   private pendingFetch?: Promise<string>;
+  /** Bumped by invalidate() so a fetch started before it never repopulates the cache. */
+  private generation = 0;
 
   constructor(
     private readonly config: FalconClientConfig,
@@ -31,37 +34,47 @@ export class OAuth2TokenManager implements TokenProvider {
   }
 
   async getToken(): Promise<string> {
-    if (
-      this.cachedToken &&
-      Date.now() < this.cachedToken.expiresAt - EXPIRY_SKEW_MS
-    ) {
+    if (this.cachedToken && Date.now() < this.cachedToken.refreshAt) {
       return this.cachedToken.accessToken;
     }
     if (!this.pendingFetch) {
       this.pendingFetch = this.fetchToken();
     }
+    const pending = this.pendingFetch;
     try {
-      return await this.pendingFetch;
+      return await pending;
     } finally {
-      this.pendingFetch = undefined;
+      // invalidate() may already have replaced the in-flight fetch with a newer one.
+      if (this.pendingFetch === pending) {
+        this.pendingFetch = undefined;
+      }
     }
   }
 
   /** Forces a fresh token fetch on the next getToken() call (e.g. after a 401). */
   invalidate(): void {
     this.cachedToken = undefined;
+    this.pendingFetch = undefined;
+    this.generation += 1;
   }
 
   private async fetchToken(): Promise<string> {
+    const startedGeneration = this.generation;
     const result = await this.oauth2Client.createToken({
       clientId: this.config.clientId,
       clientSecret: this.config.clientSecret,
       memberCid: this.config.memberCid,
     });
-    this.cachedToken = {
-      accessToken: result.accessToken,
-      expiresAt: Date.now() + result.expiresIn * 1000,
-    };
+    if (startedGeneration === this.generation) {
+      // Never let the skew exceed half the lifetime, otherwise a short-lived
+      // token would be treated as already expired the moment it is cached.
+      const lifetimeMs = result.expiresIn * 1000;
+      const skewMs = Math.min(EXPIRY_SKEW_MS, lifetimeMs / 2);
+      this.cachedToken = {
+        accessToken: result.accessToken,
+        refreshAt: Date.now() + lifetimeMs - skewMs,
+      };
+    }
     return result.accessToken;
   }
 }
