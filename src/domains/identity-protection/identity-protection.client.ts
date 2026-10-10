@@ -72,8 +72,10 @@ export class IdentityProtectionClient {
   async graphql<T = unknown>(
     query: string,
   ): Promise<IdentityProtectionGraphQLResponse<T>> {
-    return this.http.request<IdentityProtectionGraphQLResponse<T>>(
-      requests.buildGraphqlRequest(query),
-    );
+    return this.http.request<IdentityProtectionGraphQLResponse<T>>({
+      ...requests.buildGraphqlRequest(query),
+      // GraphQL reports `errors` inside an otherwise successful body.
+      allowErrorsOn2xx: true,
+    });
   }
 }

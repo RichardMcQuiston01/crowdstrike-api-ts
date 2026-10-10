@@ -15,6 +15,7 @@ export type {
 } from './core/types';
 export { paginateOffset, paginateCursor, collectAll } from './core/pagination';
 export type { OffsetPageFetcher, CursorPageFetcher } from './core/pagination';
+export type { ActionResult } from './core/resources';
 
 export { HostsClient } from './domains/hosts/hosts.client';
 export type * from './domains/hosts/hosts.types';

@@ -1,4 +1,5 @@
 import type { HttpClient } from '../../core/http-client';
+import { requestFirst } from '../../core/resources';
 import type {
   CrowdStrikeEnvelope,
   OffsetPaginationMeta,
@@ -31,10 +32,12 @@ export class RealTimeResponseClient {
   ) {}
 
   async initSession(params: InitSessionParams): Promise<RtrSession> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawSession>>(
-      requests.buildInitSessionRequest(params),
+    return mapRawSession(
+      await requestFirst<RawSession>(
+        this.http,
+        requests.buildInitSessionRequest(params),
+      ),
     );
-    return mapRawSession(raw.resources[0]);
   }
 
   async deleteSession(sessionId: string): Promise<void> {
@@ -64,10 +67,13 @@ export class RealTimeResponseClient {
     params: ExecuteCommandParams,
   ): Promise<CommandExecuteResult> {
     const id = this.sequence.claim(params.sessionId, params.id);
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawCommandExecuteResponse>
-    >(requests.buildExecuteCommandRequest({ ...params, id }));
-    return mapRawCommandExecuteResponse(raw.resources[0], id);
+    return mapRawCommandExecuteResponse(
+      await requestFirst<RawCommandExecuteResponse>(
+        this.http,
+        requests.buildExecuteCommandRequest({ ...params, id }),
+      ),
+      id,
+    );
   }
 
   /** Executes an active-responder (read/write-light) RTR command. */
@@ -75,27 +81,34 @@ export class RealTimeResponseClient {
     params: ExecuteCommandParams,
   ): Promise<CommandExecuteResult> {
     const id = this.sequence.claim(params.sessionId, params.id);
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawCommandExecuteResponse>
-    >(requests.buildExecuteActiveResponderCommandRequest({ ...params, id }));
-    return mapRawCommandExecuteResponse(raw.resources[0], id);
+    return mapRawCommandExecuteResponse(
+      await requestFirst<RawCommandExecuteResponse>(
+        this.http,
+        requests.buildExecuteActiveResponderCommandRequest({ ...params, id }),
+      ),
+      id,
+    );
   }
 
   async getCommandStatus(
     params: CommandStatusParams,
   ): Promise<CommandStatusResult> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawCommandStatus>>(
-      requests.buildCommandStatusRequest(params),
+    return mapRawCommandStatus(
+      await requestFirst<RawCommandStatus>(
+        this.http,
+        requests.buildCommandStatusRequest(params),
+      ),
     );
-    return mapRawCommandStatus(raw.resources[0]);
   }
 
   async getActiveResponderCommandStatus(
     params: CommandStatusParams,
   ): Promise<CommandStatusResult> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawCommandStatus>>(
-      requests.buildActiveResponderCommandStatusRequest(params),
+    return mapRawCommandStatus(
+      await requestFirst<RawCommandStatus>(
+        this.http,
+        requests.buildActiveResponderCommandStatusRequest(params),
+      ),
     );
-    return mapRawCommandStatus(raw.resources[0]);
   }
 }

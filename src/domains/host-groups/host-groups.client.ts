@@ -1,4 +1,6 @@
 import type { HttpClient } from '../../core/http-client';
+import type { ActionResult } from '../../core/resources';
+import { requestAction, requestFirst } from '../../core/resources';
 import type {
   CrowdStrikeEnvelope,
   OffsetPaginationMeta,
@@ -52,21 +54,25 @@ export class HostGroupsClient {
   }
 
   async create(params: CreateHostGroupParams): Promise<HostGroupDetails> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawHostGroup>>(
-      requests.buildCreateRequest(params),
+    return mapRawHostGroupToDetails(
+      await requestFirst<RawHostGroup>(
+        this.http,
+        requests.buildCreateRequest(params),
+      ),
     );
-    return mapRawHostGroupToDetails(raw.resources[0]);
   }
 
   async update(params: UpdateHostGroupParams): Promise<HostGroupDetails> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawHostGroup>>(
-      requests.buildUpdateRequest(params),
+    return mapRawHostGroupToDetails(
+      await requestFirst<RawHostGroup>(
+        this.http,
+        requests.buildUpdateRequest(params),
+      ),
     );
-    return mapRawHostGroupToDetails(raw.resources[0]);
   }
 
-  async delete(ids: string[]): Promise<void> {
-    await this.http.request(requests.buildDeleteRequest(ids));
+  async delete(ids: string[]): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildDeleteRequest(ids));
   }
 
   /** Returns just the member device IDs for a group (one page). */
@@ -97,7 +103,9 @@ export class HostGroupsClient {
     return raw.resources.map(mapRawDeviceToHostDetails);
   }
 
-  async performAction(params: PerformHostGroupActionParams): Promise<void> {
-    await this.http.request(requests.buildPerformActionRequest(params));
+  async performAction(
+    params: PerformHostGroupActionParams,
+  ): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildPerformActionRequest(params));
   }
 }

@@ -1,4 +1,6 @@
 import type { HttpClient } from '../../core/http-client';
+import type { ActionResult } from '../../core/resources';
+import { requestAction } from '../../core/resources';
 import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
 import type {
   CrowdStrikeEnvelope,
@@ -80,7 +82,7 @@ export class IocClient {
     return raw.resources.map(mapRawIoc);
   }
 
-  async delete(params: DeleteIocParams): Promise<void> {
-    await this.http.request(requests.buildDeleteRequest(params));
+  async delete(params: DeleteIocParams): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildDeleteRequest(params));
   }
 }

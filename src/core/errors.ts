@@ -12,8 +12,10 @@ export class CrowdStrikeApiError extends Error {
     traceId?: string;
     errors: CrowdStrikeErrorDetail[];
     requestPath: string;
+    /** Overrides the generated message (e.g. for errors carried on a 2xx response). */
+    message?: string;
   }) {
-    super(CrowdStrikeApiError.buildMessage(params));
+    super(params.message ?? CrowdStrikeApiError.buildMessage(params));
     this.name = 'CrowdStrikeApiError';
     this.status = params.status;
     this.traceId = params.traceId;

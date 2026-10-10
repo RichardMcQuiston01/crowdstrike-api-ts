@@ -1,4 +1,5 @@
 import type { HttpClient } from '../../core/http-client';
+import { requestFirst } from '../../core/resources';
 import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
 import type {
   CrowdStrikeEnvelope,
@@ -60,16 +61,20 @@ export class CasesClient {
   }
 
   async addTags(params: AddCaseTagsParams): Promise<CaseDetails> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawCase>>(
-      requests.buildAddTagsRequest(params),
+    return mapRawCaseToDetails(
+      await requestFirst<RawCase>(
+        this.http,
+        requests.buildAddTagsRequest(params),
+      ),
     );
-    return mapRawCaseToDetails(raw.resources[0]);
   }
 
   async removeTags(params: RemoveCaseTagsParams): Promise<CaseDetails> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawCase>>(
-      requests.buildRemoveTagsRequest(params),
+    return mapRawCaseToDetails(
+      await requestFirst<RawCase>(
+        this.http,
+        requests.buildRemoveTagsRequest(params),
+      ),
     );
-    return mapRawCaseToDetails(raw.resources[0]);
   }
 }
