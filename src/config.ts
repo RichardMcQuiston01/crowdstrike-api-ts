@@ -12,6 +12,11 @@ export interface FalconClientConfig {
   clientSecret: string;
   /** Defaults to FalconRegion.US1. Accepts a FalconRegion or a raw base-url string. */
   baseUrl?: FalconRegion | string;
+  /**
+   * Plain-HTTP base URLs are rejected unless this is true AND the host is
+   * localhost / 127.0.0.1 / [::1] (e.g. a local mock server). Defaults to false.
+   */
+  allowInsecureLoopback?: boolean;
   /** Optional MSSP child CID to act on behalf of. */
   memberCid?: string;
   /** Override the fetch implementation (useful for tests, or custom proxies). */

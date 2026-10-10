@@ -1,3 +1,4 @@
+import { assertSafeRequestPath, validateBaseUrl } from './base-url';
 import { CrowdStrikeApiError, CrowdStrikeNetworkError } from './errors';
 import type { CrowdStrikeErrorDetail } from './types';
 
@@ -35,12 +36,17 @@ const DEFAULT_TIMEOUT_MS = 30_000;
  * errors into CrowdStrikeApiError / CrowdStrikeNetworkError.
  */
 export class HttpClient {
+  private readonly baseUrl: string;
+
   constructor(
-    private readonly baseUrl: string,
+    baseUrl: string,
     private readonly tokenProvider: TokenProvider | null,
     private readonly fetchImpl: typeof fetch = fetch,
     private readonly timeoutMs: number = DEFAULT_TIMEOUT_MS,
-  ) {}
+    allowInsecureLoopback = false,
+  ) {
+    this.baseUrl = validateBaseUrl(baseUrl, allowInsecureLoopback);
+  }
 
   async request<TResponse>(
     options: RequestOptions,
@@ -104,6 +110,7 @@ export class HttpClient {
   }
 
   private buildUrl(path: string, query?: Record<string, QueryValue>): string {
+    assertSafeRequestPath(path);
     const url = new URL(path, this.baseUrl);
     if (query) {
       for (const [key, value] of Object.entries(query)) {
