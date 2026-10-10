@@ -3,6 +3,7 @@ import type {
   CrowdStrikeEnvelope,
   OffsetPaginationMeta,
 } from '../../core/types';
+import { RtrSequenceTracker } from './rtr-sequence';
 import * as requests from './real-time-response.requests';
 import {
   mapRawCommandExecuteResponse,
@@ -24,7 +25,10 @@ import type {
 } from './real-time-response.types';
 
 export class RealTimeResponseClient {
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly sequence: RtrSequenceTracker = new RtrSequenceTracker(),
+  ) {}
 
   async initSession(params: InitSessionParams): Promise<RtrSession> {
     const raw = await this.http.request<CrowdStrikeEnvelope<RawSession>>(
@@ -35,6 +39,7 @@ export class RealTimeResponseClient {
 
   async deleteSession(sessionId: string): Promise<void> {
     await this.http.request(requests.buildDeleteSessionRequest(sessionId));
+    this.sequence.reset(sessionId);
   }
 
   async listSessions(
@@ -58,20 +63,22 @@ export class RealTimeResponseClient {
   async executeCommand(
     params: ExecuteCommandParams,
   ): Promise<CommandExecuteResult> {
+    const id = this.sequence.claim(params.sessionId, params.id);
     const raw = await this.http.request<
       CrowdStrikeEnvelope<RawCommandExecuteResponse>
-    >(requests.buildExecuteCommandRequest(params));
-    return mapRawCommandExecuteResponse(raw.resources[0]);
+    >(requests.buildExecuteCommandRequest({ ...params, id }));
+    return mapRawCommandExecuteResponse(raw.resources[0], id);
   }
 
   /** Executes an active-responder (read/write-light) RTR command. */
   async executeActiveResponderCommand(
     params: ExecuteCommandParams,
   ): Promise<CommandExecuteResult> {
+    const id = this.sequence.claim(params.sessionId, params.id);
     const raw = await this.http.request<
       CrowdStrikeEnvelope<RawCommandExecuteResponse>
-    >(requests.buildExecuteActiveResponderCommandRequest(params));
-    return mapRawCommandExecuteResponse(raw.resources[0]);
+    >(requests.buildExecuteActiveResponderCommandRequest({ ...params, id }));
+    return mapRawCommandExecuteResponse(raw.resources[0], id);
   }
 
   async getCommandStatus(
