@@ -47,11 +47,19 @@ Local CI-equivalent before considering any change done: `bun run typecheck && bu
 - `OAuth2TokenManager` (`core/auth.ts`) fetches/caches/refreshes the bearer token with a 60s expiry skew and
   de-dupes concurrent fetches into one in-flight promise. It depends on `Oauth2Client`, which itself goes through an
   unauthenticated `HttpClient` (no token provider) since the token endpoint call carries no bearer token.
+- `core/base-url.ts` validates `baseUrl` (https only, no userinfo, bare origin; loopback `http:` needs
+  `allowInsecureLoopback`) and request paths. `HttpClient` calls it, so no credential reaches an unvalidated host.
+- `core/resources.ts` — `requestFirst()`/`firstResource()` for single-entity responses and `requestAction()` for
+  mutating calls (returns `ActionResult { resources, errors }`). Use these instead of indexing `raw.resources[0]` or
+  discarding the body. `HttpClient` itself throws on a 2xx body with `errors` and no `resources` (opt out per request
+  with `allowErrorsOn2xx`).
+- `core/chunk.ts` — `chunkedLookup()`/`chunkedAction()` split id lists sent as query parameters (100 per request).
+  Any new get-by-ids/delete-by-ids helper that puts ids on the query string must go through them.
 - `core/errors.ts` — `CrowdStrikeApiError` (status, traceId, `errors[]`, `requestPath`, `isAuthError`/`isRateLimited`
   getters), `CrowdStrikeNetworkError` (fetch/timeout failures), `CrowdStrikeAuthConfigError` (missing credentials,
   thrown synchronously from constructors).
 - `core/pagination.ts` — CrowdStrike uses two pagination styles. `paginateOffset()` for the standard
-  `{offset,limit,total}` meta block (most `query*`/`combined*` endpoints), `paginateCursor()` for `after`-token based
+  `{offset,limit,total}` meta block (most `query*`/`combined*` endpoints), `readOffsetPagination()` parses the offset meta block (use it, don't cast `meta.pagination`); `paginateCursor()` for `after`-token based
   endpoints (high-volume bulk endpoints, e.g. Alerts' `searchCombinedAll`). Both are async generators; `collectAll()`
   drains one into an array. A domain may define its own richer pagination meta/envelope type for its public surface
   when the wire shape doesn't cleanly match either core type (see Discover's `DiscoverCombinedEnvelope`) — that's
