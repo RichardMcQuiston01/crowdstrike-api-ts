@@ -6,6 +6,7 @@ import { HostsClient } from './domains/hosts/hosts.client';
 import { HostGroupsClient } from './domains/host-groups/host-groups.client';
 import { CasesClient } from './domains/cases/cases.client';
 import { AlertsClient } from './domains/alerts/alerts.client';
+import { RtrSequenceTracker } from './domains/real-time-response/rtr-sequence';
 import { RealTimeResponseClient } from './domains/real-time-response/real-time-response.client';
 import { RealTimeResponseAdminClient } from './domains/real-time-response/real-time-response-admin.client';
 import { ContainerVulnerabilitiesClient } from './domains/container-vulnerabilities/container-vulnerabilities.client';
@@ -71,8 +72,13 @@ export class FalconClient {
     this.hostGroups = new HostGroupsClient(http);
     this.cases = new CasesClient(http);
     this.alerts = new AlertsClient(http);
-    this.realTimeResponse = new RealTimeResponseClient(http);
-    this.realTimeResponseAdmin = new RealTimeResponseAdminClient(http);
+    // All three RTR execute endpoints share one per-session sequence counter.
+    const rtrSequence = new RtrSequenceTracker();
+    this.realTimeResponse = new RealTimeResponseClient(http, rtrSequence);
+    this.realTimeResponseAdmin = new RealTimeResponseAdminClient(
+      http,
+      rtrSequence,
+    );
     this.containerVulnerabilities = new ContainerVulnerabilitiesClient(http);
     this.intel = new IntelClient(http);
     this.ioc = new IocClient(http);

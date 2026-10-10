@@ -34,12 +34,18 @@ export interface ExecuteCommandParams {
   baseCommand: string;
   commandString: string;
   persist?: boolean;
-  /** Client-supplied sequence id for this command; defaults to 0. */
+  /**
+   * Sequence id for this command. When omitted the client assigns the next
+   * unused id for the session (0, 1, 2, ...), shared across the read-only,
+   * active-responder, and admin execute methods.
+   */
   id?: number;
 }
 
 export interface CommandExecuteResult {
   cloudRequestId: string;
+  /** Sequence id sent with the command; pass it to the matching get...CommandStatus call. */
+  sequenceId: number;
   sessionId: string;
   queuedCommandOffline: boolean;
 }

@@ -31,6 +31,7 @@ export type * from './domains/alerts/alerts.types';
 export { RealTimeResponseClient } from './domains/real-time-response/real-time-response.client';
 export { RealTimeResponseAdminClient } from './domains/real-time-response/real-time-response-admin.client';
 export type * from './domains/real-time-response/real-time-response.types';
+export { RtrSequenceTracker } from './domains/real-time-response/rtr-sequence';
 
 export { ContainerVulnerabilitiesClient } from './domains/container-vulnerabilities/container-vulnerabilities.client';
 export type * from './domains/container-vulnerabilities/container-vulnerabilities.types';

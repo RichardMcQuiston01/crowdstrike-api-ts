@@ -48,9 +48,11 @@ export function mapRawSession(raw: RawSession): RtrSession {
 
 export function mapRawCommandExecuteResponse(
   raw: RawCommandExecuteResponse,
+  sequenceId: number,
 ): CommandExecuteResult {
   return {
     cloudRequestId: raw.cloud_request_id,
+    sequenceId,
     sessionId: raw.session_id,
     queuedCommandOffline: raw.queued_command_offline,
   };
