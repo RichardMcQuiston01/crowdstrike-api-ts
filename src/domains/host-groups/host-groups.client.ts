@@ -1,8 +1,9 @@
 import type { HttpClient } from '../../core/http-client';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import { readOffsetPagination } from '../../core/pagination';
+import { chunkedAction, chunkedLookup } from '../../core/chunk';
+import type { ActionResult } from '../../core/resources';
+import { requestAction, requestFirst } from '../../core/resources';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import {
   mapRawDeviceToHostDetails,
   type RawDevice,
@@ -33,40 +34,43 @@ export class HostGroupsClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchRequest(params),
     );
-    const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
     return {
       groupIds: raw.resources,
-      pagination: pagination ?? {
-        offset: 0,
-        limit: 0,
-        total: raw.resources.length,
-      },
+      pagination: readOffsetPagination(raw),
     };
   }
 
   async getDetails(ids: string[]): Promise<HostGroupDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawHostGroup>>(
-      requests.buildGetDetailsRequest(ids),
-    );
-    return raw.resources.map(mapRawHostGroupToDetails);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<CrowdStrikeEnvelope<RawHostGroup>>(
+        requests.buildGetDetailsRequest(idChunk),
+      );
+      return raw.resources.map(mapRawHostGroupToDetails);
+    });
   }
 
   async create(params: CreateHostGroupParams): Promise<HostGroupDetails> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawHostGroup>>(
-      requests.buildCreateRequest(params),
+    return mapRawHostGroupToDetails(
+      await requestFirst<RawHostGroup>(
+        this.http,
+        requests.buildCreateRequest(params),
+      ),
     );
-    return mapRawHostGroupToDetails(raw.resources[0]);
   }
 
   async update(params: UpdateHostGroupParams): Promise<HostGroupDetails> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawHostGroup>>(
-      requests.buildUpdateRequest(params),
+    return mapRawHostGroupToDetails(
+      await requestFirst<RawHostGroup>(
+        this.http,
+        requests.buildUpdateRequest(params),
+      ),
     );
-    return mapRawHostGroupToDetails(raw.resources[0]);
   }
 
-  async delete(ids: string[]): Promise<void> {
-    await this.http.request(requests.buildDeleteRequest(ids));
+  async delete(ids: string[]): Promise<ActionResult> {
+    return chunkedAction(ids, (idChunk) =>
+      requestAction(this.http, requests.buildDeleteRequest(idChunk)),
+    );
   }
 
   /** Returns just the member device IDs for a group (one page). */
@@ -76,14 +80,9 @@ export class HostGroupsClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryMembersRequest(params),
     );
-    const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
     return {
       hostIds: raw.resources,
-      pagination: pagination ?? {
-        offset: 0,
-        limit: 0,
-        total: raw.resources.length,
-      },
+      pagination: readOffsetPagination(raw),
     };
   }
 
@@ -97,7 +96,9 @@ export class HostGroupsClient {
     return raw.resources.map(mapRawDeviceToHostDetails);
   }
 
-  async performAction(params: PerformHostGroupActionParams): Promise<void> {
-    await this.http.request(requests.buildPerformActionRequest(params));
+  async performAction(
+    params: PerformHostGroupActionParams,
+  ): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildPerformActionRequest(params));
   }
 }

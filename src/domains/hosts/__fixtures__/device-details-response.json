@@ -12,7 +12,8 @@
       "status": "normal",
       "last_seen": "2026-06-15T12:00:00Z",
       "first_seen": "2025-01-10T08:30:00Z",
-      "tags": ["FalconGroupingTags/finance"]
+      "tags": ["FalconGroupingTags/finance"],
+      "groups": ["group-1", "group-2"]
     }
   ],
   "errors": [],

@@ -90,6 +90,7 @@ describe('IdentityProtectionClient', () => {
         method: 'POST',
         path: '/identity-protection/combined/graphql/v1',
         body: { query: 'query { entities { nodes { id } } }' },
+        allowErrorsOn2xx: true,
       });
       expect(result.data?.entities.nodes[0].id).toBe('entity_1');
     });

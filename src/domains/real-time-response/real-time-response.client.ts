@@ -1,8 +1,8 @@
 import type { HttpClient } from '../../core/http-client';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import { readOffsetPagination } from '../../core/pagination';
+import { requestFirst } from '../../core/resources';
+import type { CrowdStrikeEnvelope } from '../../core/types';
+import { RtrSequenceTracker } from './rtr-sequence';
 import * as requests from './real-time-response.requests';
 import {
   mapRawCommandExecuteResponse,
@@ -24,17 +24,23 @@ import type {
 } from './real-time-response.types';
 
 export class RealTimeResponseClient {
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly sequence: RtrSequenceTracker = new RtrSequenceTracker(),
+  ) {}
 
   async initSession(params: InitSessionParams): Promise<RtrSession> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawSession>>(
-      requests.buildInitSessionRequest(params),
+    return mapRawSession(
+      await requestFirst<RawSession>(
+        this.http,
+        requests.buildInitSessionRequest(params),
+      ),
     );
-    return mapRawSession(raw.resources[0]);
   }
 
   async deleteSession(sessionId: string): Promise<void> {
     await this.http.request(requests.buildDeleteSessionRequest(sessionId));
+    this.sequence.reset(sessionId);
   }
 
   async listSessions(
@@ -43,14 +49,9 @@ export class RealTimeResponseClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildListSessionsRequest(params),
     );
-    const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
     return {
       sessionIds: raw.resources,
-      pagination: pagination ?? {
-        offset: 0,
-        limit: 0,
-        total: raw.resources.length,
-      },
+      pagination: readOffsetPagination(raw),
     };
   }
 
@@ -58,37 +59,49 @@ export class RealTimeResponseClient {
   async executeCommand(
     params: ExecuteCommandParams,
   ): Promise<CommandExecuteResult> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawCommandExecuteResponse>
-    >(requests.buildExecuteCommandRequest(params));
-    return mapRawCommandExecuteResponse(raw.resources[0]);
+    const id = this.sequence.claim(params.sessionId, params.id);
+    return mapRawCommandExecuteResponse(
+      await requestFirst<RawCommandExecuteResponse>(
+        this.http,
+        requests.buildExecuteCommandRequest({ ...params, id }),
+      ),
+      id,
+    );
   }
 
   /** Executes an active-responder (read/write-light) RTR command. */
   async executeActiveResponderCommand(
     params: ExecuteCommandParams,
   ): Promise<CommandExecuteResult> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawCommandExecuteResponse>
-    >(requests.buildExecuteActiveResponderCommandRequest(params));
-    return mapRawCommandExecuteResponse(raw.resources[0]);
+    const id = this.sequence.claim(params.sessionId, params.id);
+    return mapRawCommandExecuteResponse(
+      await requestFirst<RawCommandExecuteResponse>(
+        this.http,
+        requests.buildExecuteActiveResponderCommandRequest({ ...params, id }),
+      ),
+      id,
+    );
   }
 
   async getCommandStatus(
     params: CommandStatusParams,
   ): Promise<CommandStatusResult> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawCommandStatus>>(
-      requests.buildCommandStatusRequest(params),
+    return mapRawCommandStatus(
+      await requestFirst<RawCommandStatus>(
+        this.http,
+        requests.buildCommandStatusRequest(params),
+      ),
     );
-    return mapRawCommandStatus(raw.resources[0]);
   }
 
   async getActiveResponderCommandStatus(
     params: CommandStatusParams,
   ): Promise<CommandStatusResult> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawCommandStatus>>(
-      requests.buildActiveResponderCommandStatusRequest(params),
+    return mapRawCommandStatus(
+      await requestFirst<RawCommandStatus>(
+        this.http,
+        requests.buildActiveResponderCommandStatusRequest(params),
+      ),
     );
-    return mapRawCommandStatus(raw.resources[0]);
   }
 }

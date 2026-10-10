@@ -25,6 +25,8 @@ export interface HostDetails {
   lastSeen?: string;
   firstSeen?: string;
   tags?: string[];
+  /** IDs of the host groups this host is a member of (the device's `groups` field). */
+  groupIds: string[];
   /** Escape hatch: the full untransformed device payload. */
   raw: Record<string, unknown>;
 }

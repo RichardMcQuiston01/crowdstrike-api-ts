@@ -104,6 +104,7 @@ describe('HostsClient', () => {
       expect(host.deviceId).toBe(deviceDetailsFixture.resources[0].device_id);
       expect(host.hostname).toBe(deviceDetailsFixture.resources[0].hostname);
       expect(host.tags).toEqual(deviceDetailsFixture.resources[0].tags);
+      expect(host.groupIds).toEqual(['group-1', 'group-2']);
       expect(host.raw).toEqual(deviceDetailsFixture.resources[0]);
     });
   });
@@ -143,6 +144,24 @@ describe('HostsClient', () => {
         query: { action_name: 'contain' },
         body: { ids: ['abc123'] },
       });
+    });
+
+    it('returns the action resources and per-host errors instead of discarding them', async () => {
+      const http = fakeHttpClient({
+        resources: [{ id: 'abc123', path: '/devices/entities/abc123' }],
+        errors: [{ code: 404, id: 'zzz999', message: 'device not found' }],
+      });
+      const hosts = new HostsClient(http);
+
+      const result = await hosts.performAction({
+        ids: ['abc123', 'zzz999'],
+        action: 'contain',
+      });
+
+      expect(result.resources).toHaveLength(1);
+      expect(result.errors).toEqual([
+        { code: 404, id: 'zzz999', message: 'device not found' },
+      ]);
     });
   });
 

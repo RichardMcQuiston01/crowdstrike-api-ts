@@ -1,9 +1,14 @@
 import type { HttpClient } from '../../core/http-client';
-import { paginateCursor, type CursorPageFetcher } from '../../core/pagination';
+import type { ActionResult } from '../../core/resources';
+import { requestAction } from '../../core/resources';
+import {
+  paginateCursor,
+  type CursorPageFetcher,
+  readOffsetPagination,
+} from '../../core/pagination';
 import type {
   CrowdStrikeEnvelope,
   CursorPaginationMeta,
-  OffsetPaginationMeta,
 } from '../../core/types';
 import * as requests from './alerts.requests';
 import { mapRawAlertToDetails, type RawAlert } from './alerts.mapper';
@@ -24,14 +29,9 @@ export class AlertsClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchRequest(params),
     );
-    const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
     return {
       compositeIds: raw.resources,
-      pagination: pagination ?? {
-        offset: 0,
-        limit: 0,
-        total: raw.resources.length,
-      },
+      pagination: readOffsetPagination(raw),
     };
   }
 
@@ -69,14 +69,14 @@ export class AlertsClient {
   }
 
   /** Convenience wrapper around update() for the common update_status action. */
-  async updateStatus(params: UpdateAlertStatusParams): Promise<void> {
-    await this.update({
+  async updateStatus(params: UpdateAlertStatusParams): Promise<ActionResult> {
+    return this.update({
       compositeIds: params.compositeIds,
       actionParameters: [{ name: 'update_status', value: params.status }],
     });
   }
 
-  async update(params: UpdateAlertParams): Promise<void> {
-    await this.http.request(requests.buildUpdateRequest(params));
+  async update(params: UpdateAlertParams): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildUpdateRequest(params));
   }
 }

@@ -175,4 +175,36 @@ describe('IocClient', () => {
       });
     });
   });
+
+  describe('delete chunking', () => {
+    it('splits an explicit id list into 100-id requests', async () => {
+      const http = fakeHttpClient({ resources: [] }, { resources: [] });
+      const ioc = new IocClient(http);
+
+      await ioc.delete({
+        ids: Array.from({ length: 150 }, (_, i) => `ioc-${i}`),
+        comment: 'cleanup',
+      });
+
+      const calls = (http.request as unknown as ReturnType<typeof mock>).mock
+        .calls as unknown as Array<
+        [{ query: { ids: string[]; comment: string } }]
+      >;
+      expect(calls.map(([options]) => options.query.ids.length)).toEqual([
+        100, 50,
+      ]);
+      expect(
+        calls.every(([options]) => options.query.comment === 'cleanup'),
+      ).toBe(true);
+    });
+
+    it('sends a filter-based delete as a single request', async () => {
+      const http = fakeHttpClient({ resources: [] });
+      const ioc = new IocClient(http);
+
+      await ioc.delete({ filter: "type:'domain'" });
+
+      expect(http.request).toHaveBeenCalledTimes(1);
+    });
+  });
 });

@@ -268,4 +268,137 @@ describe('HttpClient', () => {
       expect(await result.text()).toBe('binary-content');
     });
   });
+
+  describe('timeout and abort', () => {
+    function hangingFetch(): typeof fetch {
+      return mock(
+        (_url: string, init: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            // Like real fetch, reject right away if the signal is already aborted.
+            if (init.signal?.aborted) {
+              reject(new DOMException('aborted', 'AbortError'));
+              return;
+            }
+            init.signal?.addEventListener('abort', () =>
+              reject(new DOMException('aborted', 'AbortError')),
+            );
+          }),
+      ) as unknown as typeof fetch;
+    }
+
+    it('still applies the client timeout when the caller passes a signal that never aborts', async () => {
+      const http = new HttpClient(
+        'https://api.crowdstrike.com',
+        null,
+        hangingFetch(),
+        20,
+      );
+      const neverAborts = new AbortController();
+
+      const error = await http
+        .request({ method: 'GET', path: '/x', signal: neverAborts.signal })
+        .catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(CrowdStrikeNetworkError);
+      expect((error as CrowdStrikeNetworkError).code).toBe('timeout');
+    });
+
+    it('aborts when the caller signal fires and reports code "aborted"', async () => {
+      const http = new HttpClient(
+        'https://api.crowdstrike.com',
+        null,
+        hangingFetch(),
+        10_000,
+      );
+      const caller = new AbortController();
+      const pending = http
+        .request({ method: 'GET', path: '/x', signal: caller.signal })
+        .catch((e: unknown) => e);
+
+      caller.abort();
+      const error = await pending;
+
+      expect(error).toBeInstanceOf(CrowdStrikeNetworkError);
+      expect((error as CrowdStrikeNetworkError).code).toBe('aborted');
+    });
+
+    it('rejects immediately for an already-aborted caller signal', async () => {
+      const http = new HttpClient(
+        'https://api.crowdstrike.com',
+        null,
+        hangingFetch(),
+        10_000,
+      );
+      const caller = new AbortController();
+      caller.abort();
+
+      const error = await http
+        .request({ method: 'GET', path: '/x', signal: caller.signal })
+        .catch((e: unknown) => e);
+
+      expect((error as CrowdStrikeNetworkError).code).toBe('aborted');
+    });
+  });
+
+  describe('errors on a 2xx response', () => {
+    const makeClient = (body: unknown, status = 200) => {
+      const fetchImpl = mock(async () => jsonResponse(body, status));
+      return new HttpClient(
+        'https://api.crowdstrike.com',
+        null,
+        fetchImpl as unknown as typeof fetch,
+      );
+    };
+
+    it('throws CrowdStrikeApiError when status is 200, resources is empty, and errors explains why', async () => {
+      const http = makeClient({
+        resources: [],
+        errors: [{ code: 404, message: 'device not found' }],
+        meta: { trace_id: 'trace-1' },
+      });
+
+      const error = await http
+        .request({ method: 'POST', path: '/x' })
+        .catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(CrowdStrikeApiError);
+      expect((error as CrowdStrikeApiError).status).toBe(200);
+      expect((error as CrowdStrikeApiError).traceId).toBe('trace-1');
+      expect((error as CrowdStrikeApiError).message).toContain(
+        'device not found',
+      );
+    });
+
+    it('throws for a 207 whose body has errors and no resources', async () => {
+      const http = makeClient(
+        { errors: [{ code: 400, message: 'bad id' }] },
+        207,
+      );
+      await expect(
+        http.request({ method: 'PATCH', path: '/x' }),
+      ).rejects.toBeInstanceOf(CrowdStrikeApiError);
+    });
+
+    it('returns the body on partial success so callers can read the errors', async () => {
+      const body = {
+        resources: [{ id: 'a' }],
+        errors: [{ code: 404, message: 'b missing' }],
+      };
+      const result = await makeClient(body).request({
+        method: 'POST',
+        path: '/x',
+      });
+      expect(result).toEqual(body);
+    });
+
+    it('does not throw when allowErrorsOn2xx is set (GraphQL-style bodies)', async () => {
+      const body = { data: null, errors: [{ message: 'field missing' }] };
+      const result = await makeClient(body).request({
+        method: 'POST',
+        path: '/x',
+        allowErrorsOn2xx: true,
+      });
+      expect(result).toEqual(body);
+    });
+  });
 });

@@ -1,3 +1,4 @@
+import { assertSafeRequestPath, validateBaseUrl } from './base-url';
 import { CrowdStrikeApiError, CrowdStrikeNetworkError } from './errors';
 import type { CrowdStrikeErrorDetail } from './types';
 
@@ -19,6 +20,12 @@ export interface RequestOptions<TBody = unknown> {
   /** 'json' (default) or 'blob' for binary downloads (used by sensor installer downloads). */
   responseType?: 'json' | 'blob';
   signal?: AbortSignal;
+  /**
+   * By default a 2xx response whose body carries a non-empty `errors` array and
+   * no `resources` is thrown as a CrowdStrikeApiError. Set true for endpoints
+   * (e.g. GraphQL) where `errors` is part of a successful body the caller reads.
+   */
+  allowErrorsOn2xx?: boolean;
 }
 
 /** Raw wire shape of CrowdStrike's error envelope (snake_case meta fields). */
@@ -35,12 +42,17 @@ const DEFAULT_TIMEOUT_MS = 30_000;
  * errors into CrowdStrikeApiError / CrowdStrikeNetworkError.
  */
 export class HttpClient {
+  private readonly baseUrl: string;
+
   constructor(
-    private readonly baseUrl: string,
+    baseUrl: string,
     private readonly tokenProvider: TokenProvider | null,
     private readonly fetchImpl: typeof fetch = fetch,
     private readonly timeoutMs: number = DEFAULT_TIMEOUT_MS,
-  ) {}
+    allowInsecureLoopback = false,
+  ) {
+    this.baseUrl = validateBaseUrl(baseUrl, allowInsecureLoopback);
+  }
 
   async request<TResponse>(
     options: RequestOptions,
@@ -56,54 +68,135 @@ export class HttpClient {
     }
 
     const body = this.buildBody(options, headers);
-    const controller = new AbortController();
-    const timeoutHandle = setTimeout(() => controller.abort(), this.timeoutMs);
 
-    let response: Response;
-    try {
-      response = await this.fetchImpl(url, {
-        method: options.method,
-        headers,
-        body,
-        signal: options.signal ?? controller.signal,
+    // One controller aborts the request when either the client timeout or the
+    // caller's signal fires (AbortSignal.any is unavailable on Node 18).
+    const controller = new AbortController();
+    let timedOut = false;
+    const timeoutHandle = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, this.timeoutMs);
+    const forwardCallerAbort = (): void => controller.abort();
+    if (options.signal?.aborted) {
+      controller.abort();
+    } else {
+      options.signal?.addEventListener('abort', forwardCallerAbort, {
+        once: true,
       });
-    } catch (cause) {
-      throw new CrowdStrikeNetworkError({
+    }
+    const cleanup = (): void => {
+      clearTimeout(timeoutHandle);
+      options.signal?.removeEventListener('abort', forwardCallerAbort);
+    };
+    const toNetworkError = (cause: unknown): CrowdStrikeNetworkError => {
+      if (timedOut) {
+        return new CrowdStrikeNetworkError({
+          requestPath: options.path,
+          message: `Request to ${options.path} timed out after ${this.timeoutMs}ms`,
+          cause,
+          code: 'timeout',
+        });
+      }
+      if (options.signal?.aborted) {
+        return new CrowdStrikeNetworkError({
+          requestPath: options.path,
+          message: `Request to ${options.path} was aborted by the caller`,
+          cause,
+          code: 'aborted',
+        });
+      }
+      return new CrowdStrikeNetworkError({
         requestPath: options.path,
         message: `Network request to ${options.path} failed`,
         cause,
+        code: 'network',
       });
+    };
+
+    try {
+      let response: Response;
+      try {
+        response = await this.fetchImpl(url, {
+          method: options.method,
+          headers,
+          body,
+          signal: controller.signal,
+        });
+      } catch (cause) {
+        throw toNetworkError(cause);
+      }
+
+      if (response.status === 401 && this.tokenProvider && !isRetry) {
+        cleanup();
+        this.tokenProvider.invalidate();
+        return await this.request<TResponse>(options, true);
+      }
+
+      if (!response.ok) {
+        const errorBody = await this.safeParseJson<RawErrorEnvelope>(response);
+        throw new CrowdStrikeApiError({
+          status: response.status,
+          traceId: errorBody?.meta?.trace_id,
+          errors: errorBody?.errors ?? [],
+          requestPath: options.path,
+        });
+      }
+
+      if (response.status === 204) {
+        return undefined as TResponse;
+      }
+
+      // The timeout also covers reading the body, so a stalled stream cannot hang.
+      try {
+        if (options.responseType === 'blob') {
+          return (await response.blob()) as TResponse;
+        }
+        const parsed = (await response.json()) as TResponse;
+        if (!options.allowErrorsOn2xx) {
+          this.assertNoHiddenFailure(parsed, response.status, options.path);
+        }
+        return parsed;
+      } catch (cause) {
+        if (controller.signal.aborted) {
+          throw toNetworkError(cause);
+        }
+        throw cause;
+      }
     } finally {
-      clearTimeout(timeoutHandle);
+      cleanup();
     }
+  }
 
-    if (response.status === 401 && this.tokenProvider && !isRetry) {
-      this.tokenProvider.invalidate();
-      return this.request<TResponse>(options, true);
+  /**
+   * CrowdStrike can answer 200/207 with only per-id failures in `errors` and
+   * nothing in `resources`; surface that as an error instead of empty data.
+   */
+  private assertNoHiddenFailure(
+    body: unknown,
+    status: number,
+    requestPath: string,
+  ): void {
+    if (typeof body !== 'object' || body === null) {
+      return;
     }
-
-    if (!response.ok) {
-      const errorBody = await this.safeParseJson<RawErrorEnvelope>(response);
+    const envelope = body as RawErrorEnvelope & { resources?: unknown };
+    const hasErrors =
+      Array.isArray(envelope.errors) && envelope.errors.length > 0;
+    const hasResources =
+      Array.isArray(envelope.resources) && envelope.resources.length > 0;
+    if (hasErrors && !hasResources) {
       throw new CrowdStrikeApiError({
-        status: response.status,
-        traceId: errorBody?.meta?.trace_id,
-        errors: errorBody?.errors ?? [],
-        requestPath: options.path,
+        status,
+        traceId: envelope.meta?.trace_id,
+        errors: envelope.errors ?? [],
+        requestPath,
       });
     }
-
-    if (response.status === 204) {
-      return undefined as TResponse;
-    }
-
-    if (options.responseType === 'blob') {
-      return (await response.blob()) as TResponse;
-    }
-
-    return (await response.json()) as TResponse;
   }
 
   private buildUrl(path: string, query?: Record<string, QueryValue>): string {
+    assertSafeRequestPath(path);
     const url = new URL(path, this.baseUrl);
     if (query) {
       for (const [key, value] of Object.entries(query)) {
@@ -125,7 +218,7 @@ export class HttpClient {
   private buildBody(
     options: RequestOptions,
     headers: Headers,
-  ): Bun.BodyInit | undefined {
+  ): RequestInit['body'] | undefined {
     if (options.body === undefined) {
       return undefined;
     }

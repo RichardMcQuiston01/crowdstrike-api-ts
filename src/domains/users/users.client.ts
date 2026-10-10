@@ -1,8 +1,8 @@
 import type { HttpClient } from '../../core/http-client';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import { readOffsetPagination } from '../../core/pagination';
+import type { ActionResult } from '../../core/resources';
+import { requestAction, requestFirst } from '../../core/resources';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import * as requests from './users.requests';
 import {
   mapRawUser,
@@ -26,17 +26,6 @@ import type {
   CombinedUserRolesResult,
 } from './users.types';
 
-function toPagination(raw: CrowdStrikeEnvelope<unknown>): {
-  offset: number;
-  limit: number;
-  total: number;
-} {
-  const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
-  return (
-    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
-  );
-}
-
 /**
  * Wraps CrowdStrike's User Management API (UserManagementApi, the
  * `/user-management/*` and `/user-roles/*` v1/v2 endpoints).
@@ -58,7 +47,7 @@ export class UsersClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchIdsRequest(params),
     );
-    return { ids: raw.resources, pagination: toPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async getDetails(ids: string[]): Promise<UserDetails[]> {
@@ -69,21 +58,25 @@ export class UsersClient {
   }
 
   async create(params: CreateUserParams): Promise<UserDetails> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawUser>>(
-      requests.buildCreateRequest(params),
+    return mapRawUser(
+      await requestFirst<RawUser>(
+        this.http,
+        requests.buildCreateRequest(params),
+      ),
     );
-    return mapRawUser(raw.resources[0]);
   }
 
   async update(params: UpdateUserParams): Promise<UserDetails> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawUser>>(
-      requests.buildUpdateRequest(params),
+    return mapRawUser(
+      await requestFirst<RawUser>(
+        this.http,
+        requests.buildUpdateRequest(params),
+      ),
     );
-    return mapRawUser(raw.resources[0]);
   }
 
-  async delete(userUuid: string): Promise<void> {
-    await this.http.request(requests.buildDeleteRequest(userUuid));
+  async delete(userUuid: string): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildDeleteRequest(userUuid));
   }
 
   async getRoles(ids: string[], cid?: string): Promise<UserRole[]> {
@@ -104,13 +97,18 @@ export class UsersClient {
   }
 
   /** Triggers a reset_password or reset_2fa action for one or more users. */
-  async performAction(params: PerformUserActionParams): Promise<void> {
-    await this.http.request(requests.buildPerformActionRequest(params));
+  async performAction(params: PerformUserActionParams): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildPerformActionRequest(params));
   }
 
   /** Grants or revokes one or more roles for a user against a specific CID. */
-  async grantOrRevokeRole(params: GrantOrRevokeUserRoleParams): Promise<void> {
-    await this.http.request(requests.buildGrantOrRevokeRoleRequest(params));
+  async grantOrRevokeRole(
+    params: GrantOrRevokeUserRoleParams,
+  ): Promise<ActionResult> {
+    return requestAction(
+      this.http,
+      requests.buildGrantOrRevokeRoleRequest(params),
+    );
   }
 
   /** Lists direct and flight-control role grants for a user. */
@@ -122,7 +120,7 @@ export class UsersClient {
     >(requests.buildCombinedUserRolesRequest(params));
     return {
       roles: raw.resources.map(mapRawCombinedUserRole),
-      pagination: toPagination(raw),
+      pagination: readOffsetPagination(raw),
     };
   }
 }

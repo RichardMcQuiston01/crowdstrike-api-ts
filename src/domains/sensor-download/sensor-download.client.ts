@@ -1,9 +1,11 @@
 import type { HttpClient } from '../../core/http-client';
-import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import { chunkedLookup } from '../../core/chunk';
+import {
+  paginateOffset,
+  type OffsetPageFetcher,
+  readOffsetPagination,
+} from '../../core/pagination';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import * as requests from './sensor-download.requests';
 import {
   mapRawSensorInstaller,
@@ -16,17 +18,6 @@ import type {
   SensorInstallerDetails,
 } from './sensor-download.types';
 
-function toPagination(raw: CrowdStrikeEnvelope<unknown>): {
-  offset: number;
-  limit: number;
-  total: number;
-} {
-  const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
-  return (
-    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
-  );
-}
-
 /** Wraps CrowdStrike's sensor installer catalog and binary download (SensorDownloadApi, v3 endpoints). */
 export class SensorDownloadClient {
   constructor(private readonly http: HttpClient) {}
@@ -38,7 +29,7 @@ export class SensorDownloadClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchIdsRequest(params),
     );
-    return { ids: raw.resources, pagination: toPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   /** Returns a single page of fully hydrated installer records. */
@@ -50,7 +41,7 @@ export class SensorDownloadClient {
     >(requests.buildSearchRequest(params));
     return {
       installers: raw.resources.map(mapRawSensorInstaller),
-      pagination: toPagination(raw),
+      pagination: readOffsetPagination(raw),
     };
   }
 
@@ -69,10 +60,16 @@ export class SensorDownloadClient {
   }
 
   async getDetails(ids: string[]): Promise<SensorInstallerDetails[]> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawSensorInstaller>
-    >(requests.buildGetDetailsRequest(ids));
-    return raw.resources.map(mapRawSensorInstaller);
+    return chunkedLookup(
+      ids,
+      async (idChunk) => {
+        const raw = await this.http.request<
+          CrowdStrikeEnvelope<RawSensorInstaller>
+        >(requests.buildGetDetailsRequest(idChunk));
+        return raw.resources.map(mapRawSensorInstaller);
+      },
+      50,
+    );
   }
 
   /** Returns the customer checksum ID(s) (CCID) needed to configure an installer. */

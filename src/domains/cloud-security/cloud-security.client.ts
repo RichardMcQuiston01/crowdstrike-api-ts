@@ -1,9 +1,11 @@
 import type { HttpClient } from '../../core/http-client';
-import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import { chunkedLookup } from '../../core/chunk';
+import {
+  paginateOffset,
+  type OffsetPageFetcher,
+  readOffsetPagination,
+} from '../../core/pagination';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import * as requests from './cloud-security.requests';
 import {
   mapRawCloudResource,
@@ -18,17 +20,6 @@ import type {
   ApplicationFindingsParams,
   ApplicationFindingsResult,
 } from './cloud-security.types';
-
-function toPagination(raw: CrowdStrikeEnvelope<unknown>): {
-  offset: number;
-  limit: number;
-  total: number;
-} {
-  const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
-  return (
-    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
-  );
-}
 
 /**
  * Wraps CrowdStrike's cloud asset inventory (CloudSecurityAssetsApi) — the
@@ -46,7 +37,7 @@ export class CloudSecurityClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchIdsRequest(params),
     );
-    return { ids: raw.resources, pagination: toPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   /** Async-iterates every matching resource ID across all pages. */
@@ -62,10 +53,12 @@ export class CloudSecurityClient {
 
   /** Hydrates up to 100 resources at a time by ID. */
   async getDetails(ids: string[]): Promise<CloudResourceDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawCloudResource>>(
-      requests.buildGetDetailsRequest(ids),
-    );
-    return raw.resources.map(mapRawCloudResource);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawCloudResource>
+      >(requests.buildGetDetailsRequest(idChunk));
+      return raw.resources.map(mapRawCloudResource);
+    });
   }
 
   /** Returns application-level findings for a single resource. */
@@ -77,7 +70,7 @@ export class CloudSecurityClient {
     >(requests.buildApplicationFindingsRequest(params));
     return {
       findings: raw.resources.map(mapRawApplicationFinding),
-      pagination: toPagination(raw),
+      pagination: readOffsetPagination(raw),
     };
   }
 }

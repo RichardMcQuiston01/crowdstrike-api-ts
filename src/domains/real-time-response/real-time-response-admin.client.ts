@@ -1,5 +1,6 @@
 import type { HttpClient } from '../../core/http-client';
-import type { CrowdStrikeEnvelope } from '../../core/types';
+import { requestFirst } from '../../core/resources';
+import { RtrSequenceTracker } from './rtr-sequence';
 import * as requests from './real-time-response.requests';
 import {
   mapRawCommandExecuteResponse,
@@ -16,23 +17,32 @@ import type {
 
 /** Write-access RTR commands (e.g. put, run, restart) requiring the RTR Admin role. */
 export class RealTimeResponseAdminClient {
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly sequence: RtrSequenceTracker = new RtrSequenceTracker(),
+  ) {}
 
   async executeAdminCommand(
     params: ExecuteCommandParams,
   ): Promise<CommandExecuteResult> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawCommandExecuteResponse>
-    >(requests.buildExecuteAdminCommandRequest(params));
-    return mapRawCommandExecuteResponse(raw.resources[0]);
+    const id = this.sequence.claim(params.sessionId, params.id);
+    return mapRawCommandExecuteResponse(
+      await requestFirst<RawCommandExecuteResponse>(
+        this.http,
+        requests.buildExecuteAdminCommandRequest({ ...params, id }),
+      ),
+      id,
+    );
   }
 
   async getAdminCommandStatus(
     params: CommandStatusParams,
   ): Promise<CommandStatusResult> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawCommandStatus>>(
-      requests.buildAdminCommandStatusRequest(params),
+    return mapRawCommandStatus(
+      await requestFirst<RawCommandStatus>(
+        this.http,
+        requests.buildAdminCommandStatusRequest(params),
+      ),
     );
-    return mapRawCommandStatus(raw.resources[0]);
   }
 }

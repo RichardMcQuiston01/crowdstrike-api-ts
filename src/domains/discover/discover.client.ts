@@ -1,9 +1,11 @@
 import type { HttpClient } from '../../core/http-client';
-import { paginateCursor, type CursorPageFetcher } from '../../core/pagination';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import { chunkedLookup } from '../../core/chunk';
+import {
+  paginateCursor,
+  type CursorPageFetcher,
+  readOffsetPagination,
+} from '../../core/pagination';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import * as requests from './discover.requests';
 import {
   mapRawDiscoverHost,
@@ -40,17 +42,6 @@ interface DiscoverCombinedEnvelope<T> {
   meta?: { pagination?: { after?: string; limit: number; total: number } };
 }
 
-function toIdPagination(raw: CrowdStrikeEnvelope<unknown>): {
-  offset: number;
-  limit: number;
-  total: number;
-} {
-  const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
-  return (
-    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
-  );
-}
-
 function toCursorPagination(
   raw: DiscoverCombinedEnvelope<unknown>,
   limit: number,
@@ -73,7 +64,7 @@ export class DiscoverClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryHostsRequest(params),
     );
-    return { ids: raw.resources, pagination: toIdPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async queryApplicationIds(
@@ -82,7 +73,7 @@ export class DiscoverClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryApplicationsRequest(params),
     );
-    return { ids: raw.resources, pagination: toIdPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async queryAccountIds(
@@ -91,7 +82,7 @@ export class DiscoverClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryAccountsRequest(params),
     );
-    return { ids: raw.resources, pagination: toIdPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async queryLoginIds(
@@ -100,35 +91,43 @@ export class DiscoverClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryLoginsRequest(params),
     );
-    return { ids: raw.resources, pagination: toIdPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async getHosts(ids: string[]): Promise<DiscoverHostDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawDiscoverHost>>(
-      requests.buildGetHostsRequest(ids),
-    );
-    return raw.resources.map(mapRawDiscoverHost);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<CrowdStrikeEnvelope<RawDiscoverHost>>(
+        requests.buildGetHostsRequest(idChunk),
+      );
+      return raw.resources.map(mapRawDiscoverHost);
+    });
   }
 
   async getApplications(ids: string[]): Promise<DiscoverApplicationDetails[]> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawDiscoverApplication>
-    >(requests.buildGetApplicationsRequest(ids));
-    return raw.resources.map(mapRawDiscoverApplication);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawDiscoverApplication>
+      >(requests.buildGetApplicationsRequest(idChunk));
+      return raw.resources.map(mapRawDiscoverApplication);
+    });
   }
 
   async getAccounts(ids: string[]): Promise<DiscoverAccountDetails[]> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawDiscoverAccount>
-    >(requests.buildGetAccountsRequest(ids));
-    return raw.resources.map(mapRawDiscoverAccount);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawDiscoverAccount>
+      >(requests.buildGetAccountsRequest(idChunk));
+      return raw.resources.map(mapRawDiscoverAccount);
+    });
   }
 
   async getLogins(ids: string[]): Promise<DiscoverLoginDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawDiscoverLogin>>(
-      requests.buildGetLoginsRequest(ids),
-    );
-    return raw.resources.map(mapRawDiscoverLogin);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawDiscoverLogin>
+      >(requests.buildGetLoginsRequest(idChunk));
+      return raw.resources.map(mapRawDiscoverLogin);
+    });
   }
 
   /** Returns a single page of fully hydrated assets matching the filter. */

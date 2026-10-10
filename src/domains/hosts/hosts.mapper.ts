@@ -14,6 +14,8 @@ export interface RawDevice {
   last_seen?: string;
   first_seen?: string;
   tags?: string[];
+  /** IDs of the host groups this device belongs to. */
+  groups?: string[];
   [key: string]: unknown;
 }
 
@@ -31,6 +33,9 @@ export function mapRawDeviceToHostDetails(raw: RawDevice): HostDetails {
     lastSeen: raw.last_seen,
     firstSeen: raw.first_seen,
     tags: raw.tags,
+    groupIds: Array.isArray(raw.groups)
+      ? raw.groups.filter((id): id is string => typeof id === 'string')
+      : [],
     raw,
   };
 }

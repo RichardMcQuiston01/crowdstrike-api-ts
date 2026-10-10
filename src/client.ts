@@ -6,6 +6,7 @@ import { HostsClient } from './domains/hosts/hosts.client';
 import { HostGroupsClient } from './domains/host-groups/host-groups.client';
 import { CasesClient } from './domains/cases/cases.client';
 import { AlertsClient } from './domains/alerts/alerts.client';
+import { RtrSequenceTracker } from './domains/real-time-response/rtr-sequence';
 import { RealTimeResponseClient } from './domains/real-time-response/real-time-response.client';
 import { RealTimeResponseAdminClient } from './domains/real-time-response/real-time-response-admin.client';
 import { ContainerVulnerabilitiesClient } from './domains/container-vulnerabilities/container-vulnerabilities.client';
@@ -49,7 +50,13 @@ export class FalconClient {
 
     // The /oauth2/token call itself carries no bearer token, so it gets its
     // own unauthenticated HttpClient rather than the shared one below.
-    const authHttp = new HttpClient(baseUrl, null, fetchImpl, config.timeoutMs);
+    const authHttp = new HttpClient(
+      baseUrl,
+      null,
+      fetchImpl,
+      config.timeoutMs,
+      config.allowInsecureLoopback,
+    );
     const oauth2Client = new Oauth2Client(authHttp);
     const tokenManager = new OAuth2TokenManager(config, oauth2Client);
 
@@ -58,14 +65,20 @@ export class FalconClient {
       tokenManager,
       fetchImpl,
       config.timeoutMs,
+      config.allowInsecureLoopback,
     );
 
     this.hosts = new HostsClient(http);
     this.hostGroups = new HostGroupsClient(http);
     this.cases = new CasesClient(http);
     this.alerts = new AlertsClient(http);
-    this.realTimeResponse = new RealTimeResponseClient(http);
-    this.realTimeResponseAdmin = new RealTimeResponseAdminClient(http);
+    // All three RTR execute endpoints share one per-session sequence counter.
+    const rtrSequence = new RtrSequenceTracker();
+    this.realTimeResponse = new RealTimeResponseClient(http, rtrSequence);
+    this.realTimeResponseAdmin = new RealTimeResponseAdminClient(
+      http,
+      rtrSequence,
+    );
     this.containerVulnerabilities = new ContainerVulnerabilitiesClient(http);
     this.intel = new IntelClient(http);
     this.ioc = new IocClient(http);

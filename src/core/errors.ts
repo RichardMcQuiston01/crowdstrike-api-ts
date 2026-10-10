@@ -12,8 +12,10 @@ export class CrowdStrikeApiError extends Error {
     traceId?: string;
     errors: CrowdStrikeErrorDetail[];
     requestPath: string;
+    /** Overrides the generated message (e.g. for errors carried on a 2xx response). */
+    message?: string;
   }) {
-    super(CrowdStrikeApiError.buildMessage(params));
+    super(params.message ?? CrowdStrikeApiError.buildMessage(params));
     this.name = 'CrowdStrikeApiError';
     this.status = params.status;
     this.traceId = params.traceId;
@@ -41,20 +43,27 @@ export class CrowdStrikeApiError extends Error {
   }
 }
 
+/** Why a network-level request failed. */
+export type NetworkErrorCode = 'timeout' | 'aborted' | 'network';
+
 /** Thrown for network-level failures (DNS, connection reset, timeout/abort). */
 export class CrowdStrikeNetworkError extends Error {
   readonly requestPath: string;
   readonly cause?: unknown;
+  /** 'timeout' = client timeoutMs elapsed, 'aborted' = caller's signal fired, 'network' = anything else. */
+  readonly code: NetworkErrorCode;
 
   constructor(params: {
     requestPath: string;
     message: string;
     cause?: unknown;
+    code?: NetworkErrorCode;
   }) {
     super(params.message);
     this.name = 'CrowdStrikeNetworkError';
     this.requestPath = params.requestPath;
     this.cause = params.cause;
+    this.code = params.code ?? 'network';
   }
 }
 

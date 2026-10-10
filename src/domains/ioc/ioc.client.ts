@@ -1,9 +1,13 @@
 import type { HttpClient } from '../../core/http-client';
-import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import { chunkedAction, chunkedLookup } from '../../core/chunk';
+import type { ActionResult } from '../../core/resources';
+import { requestAction } from '../../core/resources';
+import {
+  paginateOffset,
+  type OffsetPageFetcher,
+  readOffsetPagination,
+} from '../../core/pagination';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import * as requests from './ioc.requests';
 import { mapRawIoc, type RawIoc } from './ioc.mapper';
 import type {
@@ -14,17 +18,6 @@ import type {
   CreateIocParams,
   DeleteIocParams,
 } from './ioc.types';
-
-function toPagination(raw: CrowdStrikeEnvelope<unknown>): {
-  offset: number;
-  limit: number;
-  total: number;
-} {
-  const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
-  return (
-    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
-  );
-}
 
 /**
  * Wraps CrowdStrike's custom IOC management surface (IocApi). Update is
@@ -39,7 +32,7 @@ export class IocClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchRequest(params),
     );
-    return { ids: raw.resources, pagination: toPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   /** Returns a single page of fully hydrated IOC records. */
@@ -51,7 +44,7 @@ export class IocClient {
     );
     return {
       iocs: raw.resources.map(mapRawIoc),
-      pagination: toPagination(raw),
+      pagination: readOffsetPagination(raw),
     };
   }
 
@@ -67,10 +60,12 @@ export class IocClient {
   }
 
   async getDetails(ids: string[]): Promise<IocDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawIoc>>(
-      requests.buildGetDetailsRequest(ids),
-    );
-    return raw.resources.map(mapRawIoc);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<CrowdStrikeEnvelope<RawIoc>>(
+        requests.buildGetDetailsRequest(idChunk),
+      );
+      return raw.resources.map(mapRawIoc);
+    });
   }
 
   async create(params: CreateIocParams): Promise<IocDetails[]> {
@@ -80,7 +75,18 @@ export class IocClient {
     return raw.resources.map(mapRawIoc);
   }
 
-  async delete(params: DeleteIocParams): Promise<void> {
-    await this.http.request(requests.buildDeleteRequest(params));
+  async delete(params: DeleteIocParams): Promise<ActionResult> {
+    // A filter-based delete is a single server-side operation; only an explicit
+    // id list is split to keep the query string within URL limits.
+    const { ids } = params;
+    if (!ids || params.filter) {
+      return requestAction(this.http, requests.buildDeleteRequest(params));
+    }
+    return chunkedAction(ids, (idChunk) =>
+      requestAction(
+        this.http,
+        requests.buildDeleteRequest({ ...params, ids: idChunk }),
+      ),
+    );
   }
 }
