@@ -1,4 +1,6 @@
 import type { HttpClient } from '../../core/http-client';
+import type { ActionResult } from '../../core/resources';
+import { requestAction } from '../../core/resources';
 import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
 import type {
   CrowdStrikeEnvelope,
@@ -63,11 +65,11 @@ export class HostsClient {
     return this.getDetails(hostIds);
   }
 
-  async performAction(params: PerformHostActionParams): Promise<void> {
-    await this.http.request(requests.buildPerformActionRequest(params));
+  async performAction(params: PerformHostActionParams): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildPerformActionRequest(params));
   }
 
-  async updateTags(params: UpdateHostTagsParams): Promise<void> {
-    await this.http.request(requests.buildUpdateTagsRequest(params));
+  async updateTags(params: UpdateHostTagsParams): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildUpdateTagsRequest(params));
   }
 }

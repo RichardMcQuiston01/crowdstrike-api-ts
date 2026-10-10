@@ -1,4 +1,6 @@
 import type { HttpClient } from '../../core/http-client';
+import type { ActionResult } from '../../core/resources';
+import { requestAction, requestFirst } from '../../core/resources';
 import type {
   CrowdStrikeEnvelope,
   OffsetPaginationMeta,
@@ -84,23 +86,31 @@ export class CustomIoaClient {
   async createRuleGroup(
     params: CreateRuleGroupParams,
   ): Promise<CustomIoaRuleGroupDetails> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawCustomIoaRuleGroup>
-    >(requests.buildCreateRuleGroupRequest(params));
-    return mapRawCustomIoaRuleGroup(raw.resources[0]);
+    return mapRawCustomIoaRuleGroup(
+      await requestFirst<RawCustomIoaRuleGroup>(
+        this.http,
+        requests.buildCreateRuleGroupRequest(params),
+      ),
+    );
   }
 
   async updateRuleGroup(
     params: UpdateRuleGroupParams,
   ): Promise<CustomIoaRuleGroupDetails> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawCustomIoaRuleGroup>
-    >(requests.buildUpdateRuleGroupRequest(params));
-    return mapRawCustomIoaRuleGroup(raw.resources[0]);
+    return mapRawCustomIoaRuleGroup(
+      await requestFirst<RawCustomIoaRuleGroup>(
+        this.http,
+        requests.buildUpdateRuleGroupRequest(params),
+      ),
+    );
   }
 
-  async deleteRuleGroups(ids: string[], comment?: string): Promise<void> {
-    await this.http.request(
+  async deleteRuleGroups(
+    ids: string[],
+    comment?: string,
+  ): Promise<ActionResult> {
+    return requestAction(
+      this.http,
       requests.buildDeleteRuleGroupsRequest(ids, comment),
     );
   }
@@ -130,10 +140,12 @@ export class CustomIoaClient {
   }
 
   async createRule(params: CreateRuleParams): Promise<CustomIoaRuleDetails> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawCustomIoaRule>>(
-      requests.buildCreateRuleRequest(params),
+    return mapRawCustomIoaRule(
+      await requestFirst<RawCustomIoaRule>(
+        this.http,
+        requests.buildCreateRuleRequest(params),
+      ),
     );
-    return mapRawCustomIoaRule(raw.resources[0]);
   }
 
   /** Updates rules within a group; requires the complete state of every rule in the group. */
@@ -160,8 +172,9 @@ export class CustomIoaClient {
     ruleGroupId: string,
     ids: string[],
     comment?: string,
-  ): Promise<void> {
-    await this.http.request(
+  ): Promise<ActionResult> {
+    return requestAction(
+      this.http,
       requests.buildDeleteRulesRequest(ruleGroupId, ids, comment),
     );
   }

@@ -20,6 +20,12 @@ export interface RequestOptions<TBody = unknown> {
   /** 'json' (default) or 'blob' for binary downloads (used by sensor installer downloads). */
   responseType?: 'json' | 'blob';
   signal?: AbortSignal;
+  /**
+   * By default a 2xx response whose body carries a non-empty `errors` array and
+   * no `resources` is thrown as a CrowdStrikeApiError. Set true for endpoints
+   * (e.g. GraphQL) where `errors` is part of a successful body the caller reads.
+   */
+  allowErrorsOn2xx?: boolean;
 }
 
 /** Raw wire shape of CrowdStrike's error envelope (snake_case meta fields). */
@@ -146,7 +152,11 @@ export class HttpClient {
         if (options.responseType === 'blob') {
           return (await response.blob()) as TResponse;
         }
-        return (await response.json()) as TResponse;
+        const parsed = (await response.json()) as TResponse;
+        if (!options.allowErrorsOn2xx) {
+          this.assertNoHiddenFailure(parsed, response.status, options.path);
+        }
+        return parsed;
       } catch (cause) {
         if (controller.signal.aborted) {
           throw toNetworkError(cause);
@@ -155,6 +165,33 @@ export class HttpClient {
       }
     } finally {
       cleanup();
+    }
+  }
+
+  /**
+   * CrowdStrike can answer 200/207 with only per-id failures in `errors` and
+   * nothing in `resources`; surface that as an error instead of empty data.
+   */
+  private assertNoHiddenFailure(
+    body: unknown,
+    status: number,
+    requestPath: string,
+  ): void {
+    if (typeof body !== 'object' || body === null) {
+      return;
+    }
+    const envelope = body as RawErrorEnvelope & { resources?: unknown };
+    const hasErrors =
+      Array.isArray(envelope.errors) && envelope.errors.length > 0;
+    const hasResources =
+      Array.isArray(envelope.resources) && envelope.resources.length > 0;
+    if (hasErrors && !hasResources) {
+      throw new CrowdStrikeApiError({
+        status,
+        traceId: envelope.meta?.trace_id,
+        errors: envelope.errors ?? [],
+        requestPath,
+      });
     }
   }
 

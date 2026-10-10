@@ -1,4 +1,6 @@
 import type { HttpClient } from '../../core/http-client';
+import type { ActionResult } from '../../core/resources';
+import { requestAction, requestFirst } from '../../core/resources';
 import type {
   CrowdStrikeEnvelope,
   OffsetPaginationMeta,
@@ -69,21 +71,25 @@ export class UsersClient {
   }
 
   async create(params: CreateUserParams): Promise<UserDetails> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawUser>>(
-      requests.buildCreateRequest(params),
+    return mapRawUser(
+      await requestFirst<RawUser>(
+        this.http,
+        requests.buildCreateRequest(params),
+      ),
     );
-    return mapRawUser(raw.resources[0]);
   }
 
   async update(params: UpdateUserParams): Promise<UserDetails> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawUser>>(
-      requests.buildUpdateRequest(params),
+    return mapRawUser(
+      await requestFirst<RawUser>(
+        this.http,
+        requests.buildUpdateRequest(params),
+      ),
     );
-    return mapRawUser(raw.resources[0]);
   }
 
-  async delete(userUuid: string): Promise<void> {
-    await this.http.request(requests.buildDeleteRequest(userUuid));
+  async delete(userUuid: string): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildDeleteRequest(userUuid));
   }
 
   async getRoles(ids: string[], cid?: string): Promise<UserRole[]> {
@@ -104,13 +110,18 @@ export class UsersClient {
   }
 
   /** Triggers a reset_password or reset_2fa action for one or more users. */
-  async performAction(params: PerformUserActionParams): Promise<void> {
-    await this.http.request(requests.buildPerformActionRequest(params));
+  async performAction(params: PerformUserActionParams): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildPerformActionRequest(params));
   }
 
   /** Grants or revokes one or more roles for a user against a specific CID. */
-  async grantOrRevokeRole(params: GrantOrRevokeUserRoleParams): Promise<void> {
-    await this.http.request(requests.buildGrantOrRevokeRoleRequest(params));
+  async grantOrRevokeRole(
+    params: GrantOrRevokeUserRoleParams,
+  ): Promise<ActionResult> {
+    return requestAction(
+      this.http,
+      requests.buildGrantOrRevokeRoleRequest(params),
+    );
   }
 
   /** Lists direct and flight-control role grants for a user. */

@@ -1,4 +1,6 @@
 import type { HttpClient } from '../../core/http-client';
+import type { ActionResult } from '../../core/resources';
+import { requestAction } from '../../core/resources';
 import { paginateCursor, type CursorPageFetcher } from '../../core/pagination';
 import type {
   CrowdStrikeEnvelope,
@@ -69,14 +71,14 @@ export class AlertsClient {
   }
 
   /** Convenience wrapper around update() for the common update_status action. */
-  async updateStatus(params: UpdateAlertStatusParams): Promise<void> {
-    await this.update({
+  async updateStatus(params: UpdateAlertStatusParams): Promise<ActionResult> {
+    return this.update({
       compositeIds: params.compositeIds,
       actionParameters: [{ name: 'update_status', value: params.status }],
     });
   }
 
-  async update(params: UpdateAlertParams): Promise<void> {
-    await this.http.request(requests.buildUpdateRequest(params));
+  async update(params: UpdateAlertParams): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildUpdateRequest(params));
   }
 }

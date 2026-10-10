@@ -1,4 +1,6 @@
 import type { HttpClient } from '../../core/http-client';
+import type { ActionResult } from '../../core/resources';
+import { requestAction, requestFirst } from '../../core/resources';
 import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
 import type {
   CrowdStrikeEnvelope,
@@ -96,37 +98,41 @@ export class PreventionPoliciesClient {
   async create(
     params: CreatePreventionPolicyParams,
   ): Promise<PreventionPolicyDetails> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawPreventionPolicy>
-    >(requests.buildCreateRequest(params));
-    return mapRawPreventionPolicy(raw.resources[0]);
+    return mapRawPreventionPolicy(
+      await requestFirst<RawPreventionPolicy>(
+        this.http,
+        requests.buildCreateRequest(params),
+      ),
+    );
   }
 
   async update(
     params: UpdatePreventionPolicyParams,
   ): Promise<PreventionPolicyDetails> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawPreventionPolicy>
-    >(requests.buildUpdateRequest(params));
-    return mapRawPreventionPolicy(raw.resources[0]);
+    return mapRawPreventionPolicy(
+      await requestFirst<RawPreventionPolicy>(
+        this.http,
+        requests.buildUpdateRequest(params),
+      ),
+    );
   }
 
-  async delete(ids: string[]): Promise<void> {
-    await this.http.request(requests.buildDeleteRequest(ids));
+  async delete(ids: string[]): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildDeleteRequest(ids));
   }
 
   /** Enables/disables a policy, or adds/removes a host group or IOA rule group. */
   async performAction(
     params: PerformPreventionPolicyActionParams,
-  ): Promise<void> {
-    await this.http.request(requests.buildPerformActionRequest(params));
+  ): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildPerformActionRequest(params));
   }
 
   /** Sets the precedence order for all of a platform's prevention policies. */
   async setPrecedence(
     params: SetPreventionPolicyPrecedenceParams,
-  ): Promise<void> {
-    await this.http.request(requests.buildSetPrecedenceRequest(params));
+  ): Promise<ActionResult> {
+    return requestAction(this.http, requests.buildSetPrecedenceRequest(params));
   }
 
   /** Returns just the member host IDs for a policy (one page). */

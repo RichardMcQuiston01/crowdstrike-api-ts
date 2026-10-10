@@ -144,6 +144,24 @@ describe('HostsClient', () => {
         body: { ids: ['abc123'] },
       });
     });
+
+    it('returns the action resources and per-host errors instead of discarding them', async () => {
+      const http = fakeHttpClient({
+        resources: [{ id: 'abc123', path: '/devices/entities/abc123' }],
+        errors: [{ code: 404, id: 'zzz999', message: 'device not found' }],
+      });
+      const hosts = new HostsClient(http);
+
+      const result = await hosts.performAction({
+        ids: ['abc123', 'zzz999'],
+        action: 'contain',
+      });
+
+      expect(result.resources).toHaveLength(1);
+      expect(result.errors).toEqual([
+        { code: 404, id: 'zzz999', message: 'device not found' },
+      ]);
+    });
   });
 
   describe('updateTags', () => {
