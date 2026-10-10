@@ -189,4 +189,41 @@ describe('HostGroupsClient', () => {
       });
     });
   });
+
+  describe('chunking large id lists', () => {
+    const manyIds = Array.from({ length: 250 }, (_, i) => `group-${i}`);
+
+    it('splits getDetails into 100-id requests and concatenates the groups', async () => {
+      const http = fakeHttpClient(
+        groupDetailsFixture,
+        groupDetailsFixture,
+        groupDetailsFixture,
+      );
+      const groups = new HostGroupsClient(http);
+
+      const result = await groups.getDetails(manyIds);
+
+      const calls = (http.request as unknown as ReturnType<typeof mock>).mock
+        .calls as unknown as Array<[{ query: { ids: string[] } }]>;
+      expect(calls.map(([options]) => options.query.ids.length)).toEqual([
+        100, 100, 50,
+      ]);
+      expect(result.length).toBe(groupDetailsFixture.resources.length * 3);
+    });
+
+    it('splits delete into chunks and merges the results', async () => {
+      const http = fakeHttpClient(
+        { resources: ['a'] },
+        { resources: ['b'], errors: [{ code: 404, message: 'gone' }] },
+        { resources: ['c'] },
+      );
+      const groups = new HostGroupsClient(http);
+
+      const result = await groups.delete(manyIds);
+
+      expect(http.request).toHaveBeenCalledTimes(3);
+      expect(result.resources).toEqual(['a', 'b', 'c']);
+      expect(result.errors).toHaveLength(1);
+    });
+  });
 });

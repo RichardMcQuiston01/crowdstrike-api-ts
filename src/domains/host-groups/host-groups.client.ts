@@ -1,4 +1,5 @@
 import type { HttpClient } from '../../core/http-client';
+import { chunkedAction, chunkedLookup } from '../../core/chunk';
 import type { ActionResult } from '../../core/resources';
 import { requestAction, requestFirst } from '../../core/resources';
 import type {
@@ -47,10 +48,12 @@ export class HostGroupsClient {
   }
 
   async getDetails(ids: string[]): Promise<HostGroupDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawHostGroup>>(
-      requests.buildGetDetailsRequest(ids),
-    );
-    return raw.resources.map(mapRawHostGroupToDetails);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<CrowdStrikeEnvelope<RawHostGroup>>(
+        requests.buildGetDetailsRequest(idChunk),
+      );
+      return raw.resources.map(mapRawHostGroupToDetails);
+    });
   }
 
   async create(params: CreateHostGroupParams): Promise<HostGroupDetails> {
@@ -72,7 +75,9 @@ export class HostGroupsClient {
   }
 
   async delete(ids: string[]): Promise<ActionResult> {
-    return requestAction(this.http, requests.buildDeleteRequest(ids));
+    return chunkedAction(ids, (idChunk) =>
+      requestAction(this.http, requests.buildDeleteRequest(idChunk)),
+    );
   }
 
   /** Returns just the member device IDs for a group (one page). */

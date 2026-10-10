@@ -1,4 +1,5 @@
 import type { HttpClient } from '../../core/http-client';
+import { chunkedLookup } from '../../core/chunk';
 import { paginateCursor, type CursorPageFetcher } from '../../core/pagination';
 import type {
   CrowdStrikeEnvelope,
@@ -104,31 +105,39 @@ export class DiscoverClient {
   }
 
   async getHosts(ids: string[]): Promise<DiscoverHostDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawDiscoverHost>>(
-      requests.buildGetHostsRequest(ids),
-    );
-    return raw.resources.map(mapRawDiscoverHost);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<CrowdStrikeEnvelope<RawDiscoverHost>>(
+        requests.buildGetHostsRequest(idChunk),
+      );
+      return raw.resources.map(mapRawDiscoverHost);
+    });
   }
 
   async getApplications(ids: string[]): Promise<DiscoverApplicationDetails[]> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawDiscoverApplication>
-    >(requests.buildGetApplicationsRequest(ids));
-    return raw.resources.map(mapRawDiscoverApplication);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawDiscoverApplication>
+      >(requests.buildGetApplicationsRequest(idChunk));
+      return raw.resources.map(mapRawDiscoverApplication);
+    });
   }
 
   async getAccounts(ids: string[]): Promise<DiscoverAccountDetails[]> {
-    const raw = await this.http.request<
-      CrowdStrikeEnvelope<RawDiscoverAccount>
-    >(requests.buildGetAccountsRequest(ids));
-    return raw.resources.map(mapRawDiscoverAccount);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawDiscoverAccount>
+      >(requests.buildGetAccountsRequest(idChunk));
+      return raw.resources.map(mapRawDiscoverAccount);
+    });
   }
 
   async getLogins(ids: string[]): Promise<DiscoverLoginDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawDiscoverLogin>>(
-      requests.buildGetLoginsRequest(ids),
-    );
-    return raw.resources.map(mapRawDiscoverLogin);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<
+        CrowdStrikeEnvelope<RawDiscoverLogin>
+      >(requests.buildGetLoginsRequest(idChunk));
+      return raw.resources.map(mapRawDiscoverLogin);
+    });
   }
 
   /** Returns a single page of fully hydrated assets matching the filter. */

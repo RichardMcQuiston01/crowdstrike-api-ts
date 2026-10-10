@@ -1,4 +1,5 @@
 import type { HttpClient } from '../../core/http-client';
+import { chunkedAction, chunkedLookup } from '../../core/chunk';
 import type { ActionResult } from '../../core/resources';
 import { requestAction } from '../../core/resources';
 import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
@@ -69,10 +70,12 @@ export class IocClient {
   }
 
   async getDetails(ids: string[]): Promise<IocDetails[]> {
-    const raw = await this.http.request<CrowdStrikeEnvelope<RawIoc>>(
-      requests.buildGetDetailsRequest(ids),
-    );
-    return raw.resources.map(mapRawIoc);
+    return chunkedLookup(ids, async (idChunk) => {
+      const raw = await this.http.request<CrowdStrikeEnvelope<RawIoc>>(
+        requests.buildGetDetailsRequest(idChunk),
+      );
+      return raw.resources.map(mapRawIoc);
+    });
   }
 
   async create(params: CreateIocParams): Promise<IocDetails[]> {
@@ -83,6 +86,17 @@ export class IocClient {
   }
 
   async delete(params: DeleteIocParams): Promise<ActionResult> {
-    return requestAction(this.http, requests.buildDeleteRequest(params));
+    // A filter-based delete is a single server-side operation; only an explicit
+    // id list is split to keep the query string within URL limits.
+    const { ids } = params;
+    if (!ids || params.filter) {
+      return requestAction(this.http, requests.buildDeleteRequest(params));
+    }
+    return chunkedAction(ids, (idChunk) =>
+      requestAction(
+        this.http,
+        requests.buildDeleteRequest({ ...params, ids: idChunk }),
+      ),
+    );
   }
 }
