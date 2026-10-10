@@ -49,7 +49,13 @@ export class FalconClient {
 
     // The /oauth2/token call itself carries no bearer token, so it gets its
     // own unauthenticated HttpClient rather than the shared one below.
-    const authHttp = new HttpClient(baseUrl, null, fetchImpl, config.timeoutMs);
+    const authHttp = new HttpClient(
+      baseUrl,
+      null,
+      fetchImpl,
+      config.timeoutMs,
+      config.allowInsecureLoopback,
+    );
     const oauth2Client = new Oauth2Client(authHttp);
     const tokenManager = new OAuth2TokenManager(config, oauth2Client);
 
@@ -58,6 +64,7 @@ export class FalconClient {
       tokenManager,
       fetchImpl,
       config.timeoutMs,
+      config.allowInsecureLoopback,
     );
 
     this.hosts = new HostsClient(http);

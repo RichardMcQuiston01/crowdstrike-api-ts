@@ -53,7 +53,8 @@ const client = new FalconClient({
 | -------------- | ------------------------ | -------- | ----------------------------------------------------------- |
 | `clientId`     | `string`                 | yes      | OAuth2 client ID from the Falcon console                    |
 | `clientSecret` | `string`                 | yes      | OAuth2 client secret                                        |
-| `baseUrl`      | `FalconRegion \| string` | no       | API base URL. Defaults to `FalconRegion.US1`                |
+| `baseUrl`      | `FalconRegion \| string` | no       | API base URL (must be an `https:` origin, no userinfo). Defaults to `FalconRegion.US1` |
+| `allowInsecureLoopback` | `boolean` | no | Permit `http:` for `localhost`/`127.0.0.1`/`[::1]` only (local mocks). Defaults to `false` |
 | `memberCid`    | `string`                 | no       | MSSP child CID to act on behalf of                          |
 | `fetch`        | `typeof fetch`           | no       | Custom fetch implementation (useful for proxies or testing) |
 | `timeoutMs`    | `number`                 | no       | Per-request timeout in milliseconds. Defaults to `30000`    |
