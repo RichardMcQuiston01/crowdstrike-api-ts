@@ -41,20 +41,27 @@ export class CrowdStrikeApiError extends Error {
   }
 }
 
+/** Why a network-level request failed. */
+export type NetworkErrorCode = 'timeout' | 'aborted' | 'network';
+
 /** Thrown for network-level failures (DNS, connection reset, timeout/abort). */
 export class CrowdStrikeNetworkError extends Error {
   readonly requestPath: string;
   readonly cause?: unknown;
+  /** 'timeout' = client timeoutMs elapsed, 'aborted' = caller's signal fired, 'network' = anything else. */
+  readonly code: NetworkErrorCode;
 
   constructor(params: {
     requestPath: string;
     message: string;
     cause?: unknown;
+    code?: NetworkErrorCode;
   }) {
     super(params.message);
     this.name = 'CrowdStrikeNetworkError';
     this.requestPath = params.requestPath;
     this.cause = params.cause;
+    this.code = params.code ?? 'network';
   }
 }
 

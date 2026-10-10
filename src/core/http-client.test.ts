@@ -268,4 +268,75 @@ describe('HttpClient', () => {
       expect(await result.text()).toBe('binary-content');
     });
   });
+
+  describe('timeout and abort', () => {
+    function hangingFetch(): typeof fetch {
+      return mock(
+        (_url: string, init: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            // Like real fetch, reject right away if the signal is already aborted.
+            if (init.signal?.aborted) {
+              reject(new DOMException('aborted', 'AbortError'));
+              return;
+            }
+            init.signal?.addEventListener('abort', () =>
+              reject(new DOMException('aborted', 'AbortError')),
+            );
+          }),
+      ) as unknown as typeof fetch;
+    }
+
+    it('still applies the client timeout when the caller passes a signal that never aborts', async () => {
+      const http = new HttpClient(
+        'https://api.crowdstrike.com',
+        null,
+        hangingFetch(),
+        20,
+      );
+      const neverAborts = new AbortController();
+
+      const error = await http
+        .request({ method: 'GET', path: '/x', signal: neverAborts.signal })
+        .catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(CrowdStrikeNetworkError);
+      expect((error as CrowdStrikeNetworkError).code).toBe('timeout');
+    });
+
+    it('aborts when the caller signal fires and reports code "aborted"', async () => {
+      const http = new HttpClient(
+        'https://api.crowdstrike.com',
+        null,
+        hangingFetch(),
+        10_000,
+      );
+      const caller = new AbortController();
+      const pending = http
+        .request({ method: 'GET', path: '/x', signal: caller.signal })
+        .catch((e: unknown) => e);
+
+      caller.abort();
+      const error = await pending;
+
+      expect(error).toBeInstanceOf(CrowdStrikeNetworkError);
+      expect((error as CrowdStrikeNetworkError).code).toBe('aborted');
+    });
+
+    it('rejects immediately for an already-aborted caller signal', async () => {
+      const http = new HttpClient(
+        'https://api.crowdstrike.com',
+        null,
+        hangingFetch(),
+        10_000,
+      );
+      const caller = new AbortController();
+      caller.abort();
+
+      const error = await http
+        .request({ method: 'GET', path: '/x', signal: caller.signal })
+        .catch((e: unknown) => e);
+
+      expect((error as CrowdStrikeNetworkError).code).toBe('aborted');
+    });
+  });
 });
