@@ -8,6 +8,11 @@ export interface CaseReport {
   alerts: AlertDetails[];
 }
 
+/** Escapes a value for use inside a single-quoted FQL string literal. */
+function escapeFqlString(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 /**
  * Joins Cases + Alerts: CrowdStrike has no single endpoint that returns a
  * case together with its associated alerts, so this composite fetches the
@@ -26,7 +31,7 @@ export class CaseReportComposite {
     }
 
     const { compositeIds } = await this.alerts.search({
-      filter: `case_id:'${caseId}'`,
+      filter: `case_id:'${escapeFqlString(caseId)}'`,
     });
     const alerts =
       compositeIds.length === 0

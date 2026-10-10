@@ -86,4 +86,27 @@ describe('CaseReportComposite', () => {
       'Case not found: missing-case',
     );
   });
+
+  it('escapes quotes and backslashes so the case id stays one FQL literal', async () => {
+    const maliciousId = "abc' + case_id:* + '";
+    const getDetails = mock(async () => [fakeCase({ id: maliciousId })]);
+    const search = mock(async () => ({
+      compositeIds: [],
+      pagination: { offset: 0, limit: 100, total: 0 },
+    }));
+    const composite = new CaseReportComposite(
+      { getDetails } as unknown as CasesClient,
+      { search, getDetails: mock(async () => []) } as unknown as AlertsClient,
+    );
+
+    await composite.get(maliciousId);
+    await composite.get('a\\b');
+
+    expect(search).toHaveBeenNthCalledWith(1, {
+      filter: "case_id:'abc\\' + case_id:* + \\''",
+    });
+    expect(search).toHaveBeenNthCalledWith(2, {
+      filter: "case_id:'a\\\\b'",
+    });
+  });
 });
