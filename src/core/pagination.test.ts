@@ -1,11 +1,13 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect, mock } from 'bun:test';
 import {
   paginateOffset,
   paginateCursor,
   collectAll,
   type OffsetPageFetcher,
   type CursorPageFetcher,
+  readOffsetPagination,
 } from './pagination';
+import { CrowdStrikeApiError } from './errors';
 
 describe('paginateOffset', () => {
   it('walks every page until the running offset reaches the total', async () => {
@@ -86,5 +88,74 @@ describe('collectAll', () => {
       yield 3;
     }
     expect(await collectAll(gen())).toEqual([1, 2, 3]);
+  });
+});
+
+describe('paginateCursor repeated token', () => {
+  it('stops when the after token does not advance', async () => {
+    const fetchPage = mock(async () => ({
+      resources: ['a', 'b'],
+      pagination: { after: 'same-token', limit: 2 },
+    }));
+
+    const items = await collectAll(paginateCursor(fetchPage));
+
+    // First page (no token yet) yields 2; second page repeats the token and stops.
+    expect(fetchPage).toHaveBeenCalledTimes(2);
+    expect(items).toEqual(['a', 'b', 'a', 'b']);
+  });
+});
+
+describe('paginateOffset non-numeric total', () => {
+  it('stops instead of looping forever when total is not a finite number', async () => {
+    const fetchPage = mock(async () => ({
+      resources: ['a'],
+      pagination: { offset: 0, limit: 1, total: Number.NaN },
+    }));
+
+    const items = await collectAll(paginateOffset(fetchPage));
+
+    expect(fetchPage).toHaveBeenCalledTimes(1);
+    expect(items).toEqual(['a']);
+  });
+});
+
+describe('readOffsetPagination', () => {
+  it('returns a well-formed pagination block as-is', () => {
+    expect(
+      readOffsetPagination({
+        resources: ['a'],
+        meta: { pagination: { offset: 5, limit: 10, total: 40 } },
+      }),
+    ).toEqual({ offset: 5, limit: 10, total: 40 });
+  });
+
+  it('falls back to a single page when the block is missing or empty', () => {
+    const expected = { offset: 0, limit: 0, total: 2 };
+    expect(readOffsetPagination({ resources: ['a', 'b'] })).toEqual(expected);
+    expect(
+      readOffsetPagination({
+        resources: ['a', 'b'],
+        meta: { pagination: {} as never },
+      }),
+    ).toEqual(expected);
+  });
+
+  it('rejects a cursor-shaped block instead of casting it', () => {
+    expect(() =>
+      readOffsetPagination(
+        { resources: ['a'], meta: { pagination: { after: 'tok', limit: 1 } } },
+        '/alerts/queries/alerts/v2',
+      ),
+    ).toThrow(CrowdStrikeApiError);
+  });
+
+  it('rejects a non-numeric total', () => {
+    expect(() =>
+      readOffsetPagination({
+        resources: [],
+        meta: { pagination: { offset: 0, limit: 1, total: '5' as never } },
+      }),
+    ).toThrow(/numeric "total"/);
   });
 });

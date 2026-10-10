@@ -9,7 +9,8 @@ function fakeHost(overrides: Partial<HostDetails> = {}): HostDetails {
   return {
     deviceId: 'host-1',
     cid: 'cid-1',
-    raw: { groups: ['group-1', 'group-2'] },
+    groupIds: ['group-1', 'group-2'],
+    raw: {},
     ...overrides,
   };
 }
@@ -48,7 +49,7 @@ describe('HostsWithGroupsComposite', () => {
 
   it('falls back to the group ID as the name if the group lookup omits it', async () => {
     const searchWithDetails = mock(async () => [
-      fakeHost({ raw: { groups: ['group-missing'] } }),
+      fakeHost({ groupIds: ['group-missing'] }),
     ]);
     const getDetails = mock(async () => []);
     const composite = new HostsWithGroupsComposite(
@@ -78,7 +79,7 @@ describe('HostsWithGroupsComposite', () => {
   });
 
   it('skips the group lookup entirely when no host has any group membership', async () => {
-    const searchWithDetails = mock(async () => [fakeHost({ raw: {} })]);
+    const searchWithDetails = mock(async () => [fakeHost({ groupIds: [] })]);
     const getDetails = mock(async () => []);
     const composite = new HostsWithGroupsComposite(
       { searchWithDetails } as unknown as HostsClient,
@@ -87,7 +88,7 @@ describe('HostsWithGroupsComposite', () => {
 
     const result = await composite.search();
 
-    expect(result).toEqual([{ ...fakeHost({ raw: {} }), groups: [] }]);
+    expect(result).toEqual([{ ...fakeHost({ groupIds: [] }), groups: [] }]);
     expect(getDetails).not.toHaveBeenCalled();
   });
 });

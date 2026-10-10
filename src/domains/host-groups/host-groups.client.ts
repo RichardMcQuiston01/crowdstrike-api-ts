@@ -1,11 +1,9 @@
 import type { HttpClient } from '../../core/http-client';
+import { readOffsetPagination } from '../../core/pagination';
 import { chunkedAction, chunkedLookup } from '../../core/chunk';
 import type { ActionResult } from '../../core/resources';
 import { requestAction, requestFirst } from '../../core/resources';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import {
   mapRawDeviceToHostDetails,
   type RawDevice,
@@ -36,14 +34,9 @@ export class HostGroupsClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchRequest(params),
     );
-    const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
     return {
       groupIds: raw.resources,
-      pagination: pagination ?? {
-        offset: 0,
-        limit: 0,
-        total: raw.resources.length,
-      },
+      pagination: readOffsetPagination(raw),
     };
   }
 
@@ -87,14 +80,9 @@ export class HostGroupsClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryMembersRequest(params),
     );
-    const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
     return {
       hostIds: raw.resources,
-      pagination: pagination ?? {
-        offset: 0,
-        limit: 0,
-        total: raw.resources.length,
-      },
+      pagination: readOffsetPagination(raw),
     };
   }
 

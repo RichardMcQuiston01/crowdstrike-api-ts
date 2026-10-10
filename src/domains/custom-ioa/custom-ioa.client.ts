@@ -1,11 +1,9 @@
 import type { HttpClient } from '../../core/http-client';
+import { readOffsetPagination } from '../../core/pagination';
 import { chunkedAction, chunkedLookup } from '../../core/chunk';
 import type { ActionResult } from '../../core/resources';
 import { requestAction, requestFirst } from '../../core/resources';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import * as requests from './custom-ioa.requests';
 import {
   mapRawCustomIoaRule,
@@ -38,17 +36,6 @@ import type {
   FieldValidationResult,
 } from './custom-ioa.types';
 
-function toPagination(raw: CrowdStrikeEnvelope<unknown>): {
-  offset: number;
-  limit: number;
-  total: number;
-} {
-  const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
-  return (
-    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
-  );
-}
-
 /**
  * Wraps CrowdStrike's Custom IOA API (CustomIoaApi) — Falcon's custom
  * indicator-of-attack rule groups and rules. Full FalconJS coverage: all 20
@@ -65,7 +52,7 @@ export class CustomIoaClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchRuleGroupIdsRequest(params),
     );
-    return { ids: raw.resources, pagination: toPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async searchRuleGroupsFull(
@@ -126,7 +113,7 @@ export class CustomIoaClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchRuleIdsRequest(params),
     );
-    return { ids: raw.resources, pagination: toPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async getRules(ids: string[]): Promise<CustomIoaRuleDetails[]> {
@@ -205,7 +192,7 @@ export class CustomIoaClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchPatternIdsRequest(params),
     );
-    return { ids: raw.resources, pagination: toPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async getPatterns(ids: string[]): Promise<PatternSeverity[]> {
@@ -223,7 +210,7 @@ export class CustomIoaClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchPlatformIdsRequest(params),
     );
-    return { ids: raw.resources, pagination: toPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async getPlatforms(ids: string[]): Promise<IoaPlatform[]> {
@@ -241,7 +228,7 @@ export class CustomIoaClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchRuleTypeIdsRequest(params),
     );
-    return { ids: raw.resources, pagination: toPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   async getRuleTypes(ids: string[]): Promise<RuleTypeDetails[]> {

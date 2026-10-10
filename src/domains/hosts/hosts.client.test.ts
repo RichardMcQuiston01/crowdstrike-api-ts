@@ -104,6 +104,7 @@ describe('HostsClient', () => {
       expect(host.deviceId).toBe(deviceDetailsFixture.resources[0].device_id);
       expect(host.hostname).toBe(deviceDetailsFixture.resources[0].hostname);
       expect(host.tags).toEqual(deviceDetailsFixture.resources[0].tags);
+      expect(host.groupIds).toEqual(['group-1', 'group-2']);
       expect(host.raw).toEqual(deviceDetailsFixture.resources[0]);
     });
   });

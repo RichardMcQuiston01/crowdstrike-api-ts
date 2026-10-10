@@ -2,11 +2,12 @@ import type { HttpClient } from '../../core/http-client';
 import { chunkedAction, chunkedLookup } from '../../core/chunk';
 import type { ActionResult } from '../../core/resources';
 import { requestAction, requestFirst } from '../../core/resources';
-import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import {
+  paginateOffset,
+  type OffsetPageFetcher,
+  readOffsetPagination,
+} from '../../core/pagination';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import {
   mapRawDeviceToHostDetails,
   type RawDevice,
@@ -30,17 +31,6 @@ import type {
   PreventionPolicyMemberSearchResult,
 } from './prevention-policies.types';
 
-function toPagination(raw: CrowdStrikeEnvelope<unknown>): {
-  offset: number;
-  limit: number;
-  total: number;
-} {
-  const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
-  return (
-    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
-  );
-}
-
 /**
  * Wraps CrowdStrike's Prevention Policies API (PreventionPoliciesApi) in full —
  * every operation FalconJS exposes for this collection is implemented here.
@@ -59,7 +49,7 @@ export class PreventionPoliciesClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchIdsRequest(params),
     );
-    return { ids: raw.resources, pagination: toPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   /** Returns a single page of fully hydrated policies. */
@@ -71,7 +61,7 @@ export class PreventionPoliciesClient {
     >(requests.buildSearchCombinedRequest(params));
     return {
       policies: raw.resources.map(mapRawPreventionPolicy),
-      pagination: toPagination(raw),
+      pagination: readOffsetPagination(raw),
     };
   }
 
@@ -147,7 +137,7 @@ export class PreventionPoliciesClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildQueryMembersRequest(params),
     );
-    return { hostIds: raw.resources, pagination: toPagination(raw) };
+    return { hostIds: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   /** Returns fully hydrated host details for a policy's members in one call. */

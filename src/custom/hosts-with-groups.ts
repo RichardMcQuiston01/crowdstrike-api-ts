@@ -14,13 +14,6 @@ export interface HostWithGroups extends HostDetails {
   groups: HostGroupSummary[];
 }
 
-function extractGroupIds(host: HostDetails): string[] {
-  const groups = host.raw['groups'];
-  return Array.isArray(groups)
-    ? groups.filter((id): id is string => typeof id === 'string')
-    : [];
-}
-
 /**
  * Joins Hosts + HostGroups: CrowdStrike's device entity only embeds the
  * member group IDs, not their names, so this composite hydrates the
@@ -40,7 +33,7 @@ export class HostsWithGroupsComposite {
 
     const groupIds = new Set<string>();
     for (const host of hosts) {
-      for (const id of extractGroupIds(host)) {
+      for (const id of host.groupIds) {
         groupIds.add(id);
       }
     }
@@ -55,7 +48,7 @@ export class HostsWithGroupsComposite {
 
     return hosts.map((host) => ({
       ...host,
-      groups: extractGroupIds(host).map((id) => ({
+      groups: host.groupIds.map((id) => ({
         id,
         name: namesById.get(id) ?? id,
       })),

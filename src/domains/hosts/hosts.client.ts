@@ -1,11 +1,12 @@
 import type { HttpClient } from '../../core/http-client';
 import type { ActionResult } from '../../core/resources';
 import { requestAction } from '../../core/resources';
-import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import {
+  paginateOffset,
+  type OffsetPageFetcher,
+  readOffsetPagination,
+} from '../../core/pagination';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import * as requests from './hosts.requests';
 import { mapRawDeviceToHostDetails, type RawDevice } from './hosts.mapper';
 import type {
@@ -24,14 +25,9 @@ export class HostsClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchRequest(params),
     );
-    const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
     return {
       hostIds: raw.resources,
-      pagination: pagination ?? {
-        offset: 0,
-        limit: 0,
-        total: raw.resources.length,
-      },
+      pagination: readOffsetPagination(raw),
     };
   }
 

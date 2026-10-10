@@ -2,11 +2,12 @@ import type { HttpClient } from '../../core/http-client';
 import { chunkedAction, chunkedLookup } from '../../core/chunk';
 import type { ActionResult } from '../../core/resources';
 import { requestAction } from '../../core/resources';
-import { paginateOffset, type OffsetPageFetcher } from '../../core/pagination';
-import type {
-  CrowdStrikeEnvelope,
-  OffsetPaginationMeta,
-} from '../../core/types';
+import {
+  paginateOffset,
+  type OffsetPageFetcher,
+  readOffsetPagination,
+} from '../../core/pagination';
+import type { CrowdStrikeEnvelope } from '../../core/types';
 import * as requests from './ioc.requests';
 import { mapRawIoc, type RawIoc } from './ioc.mapper';
 import type {
@@ -17,17 +18,6 @@ import type {
   CreateIocParams,
   DeleteIocParams,
 } from './ioc.types';
-
-function toPagination(raw: CrowdStrikeEnvelope<unknown>): {
-  offset: number;
-  limit: number;
-  total: number;
-} {
-  const pagination = raw.meta?.pagination as OffsetPaginationMeta | undefined;
-  return (
-    pagination ?? { offset: 0, limit: 0, total: (raw.resources ?? []).length }
-  );
-}
 
 /**
  * Wraps CrowdStrike's custom IOC management surface (IocApi). Update is
@@ -42,7 +32,7 @@ export class IocClient {
     const raw = await this.http.request<CrowdStrikeEnvelope<string>>(
       requests.buildSearchRequest(params),
     );
-    return { ids: raw.resources, pagination: toPagination(raw) };
+    return { ids: raw.resources, pagination: readOffsetPagination(raw) };
   }
 
   /** Returns a single page of fully hydrated IOC records. */
@@ -54,7 +44,7 @@ export class IocClient {
     );
     return {
       iocs: raw.resources.map(mapRawIoc),
-      pagination: toPagination(raw),
+      pagination: readOffsetPagination(raw),
     };
   }
 
