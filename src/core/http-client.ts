@@ -62,51 +62,100 @@ export class HttpClient {
     }
 
     const body = this.buildBody(options, headers);
-    const controller = new AbortController();
-    const timeoutHandle = setTimeout(() => controller.abort(), this.timeoutMs);
 
-    let response: Response;
-    try {
-      response = await this.fetchImpl(url, {
-        method: options.method,
-        headers,
-        body,
-        signal: options.signal ?? controller.signal,
+    // One controller aborts the request when either the client timeout or the
+    // caller's signal fires (AbortSignal.any is unavailable on Node 18).
+    const controller = new AbortController();
+    let timedOut = false;
+    const timeoutHandle = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, this.timeoutMs);
+    const forwardCallerAbort = (): void => controller.abort();
+    if (options.signal?.aborted) {
+      controller.abort();
+    } else {
+      options.signal?.addEventListener('abort', forwardCallerAbort, {
+        once: true,
       });
-    } catch (cause) {
-      throw new CrowdStrikeNetworkError({
+    }
+    const cleanup = (): void => {
+      clearTimeout(timeoutHandle);
+      options.signal?.removeEventListener('abort', forwardCallerAbort);
+    };
+    const toNetworkError = (cause: unknown): CrowdStrikeNetworkError => {
+      if (timedOut) {
+        return new CrowdStrikeNetworkError({
+          requestPath: options.path,
+          message: `Request to ${options.path} timed out after ${this.timeoutMs}ms`,
+          cause,
+          code: 'timeout',
+        });
+      }
+      if (options.signal?.aborted) {
+        return new CrowdStrikeNetworkError({
+          requestPath: options.path,
+          message: `Request to ${options.path} was aborted by the caller`,
+          cause,
+          code: 'aborted',
+        });
+      }
+      return new CrowdStrikeNetworkError({
         requestPath: options.path,
         message: `Network request to ${options.path} failed`,
         cause,
+        code: 'network',
       });
+    };
+
+    try {
+      let response: Response;
+      try {
+        response = await this.fetchImpl(url, {
+          method: options.method,
+          headers,
+          body,
+          signal: controller.signal,
+        });
+      } catch (cause) {
+        throw toNetworkError(cause);
+      }
+
+      if (response.status === 401 && this.tokenProvider && !isRetry) {
+        cleanup();
+        this.tokenProvider.invalidate();
+        return await this.request<TResponse>(options, true);
+      }
+
+      if (!response.ok) {
+        const errorBody = await this.safeParseJson<RawErrorEnvelope>(response);
+        throw new CrowdStrikeApiError({
+          status: response.status,
+          traceId: errorBody?.meta?.trace_id,
+          errors: errorBody?.errors ?? [],
+          requestPath: options.path,
+        });
+      }
+
+      if (response.status === 204) {
+        return undefined as TResponse;
+      }
+
+      // The timeout also covers reading the body, so a stalled stream cannot hang.
+      try {
+        if (options.responseType === 'blob') {
+          return (await response.blob()) as TResponse;
+        }
+        return (await response.json()) as TResponse;
+      } catch (cause) {
+        if (controller.signal.aborted) {
+          throw toNetworkError(cause);
+        }
+        throw cause;
+      }
     } finally {
-      clearTimeout(timeoutHandle);
+      cleanup();
     }
-
-    if (response.status === 401 && this.tokenProvider && !isRetry) {
-      this.tokenProvider.invalidate();
-      return this.request<TResponse>(options, true);
-    }
-
-    if (!response.ok) {
-      const errorBody = await this.safeParseJson<RawErrorEnvelope>(response);
-      throw new CrowdStrikeApiError({
-        status: response.status,
-        traceId: errorBody?.meta?.trace_id,
-        errors: errorBody?.errors ?? [],
-        requestPath: options.path,
-      });
-    }
-
-    if (response.status === 204) {
-      return undefined as TResponse;
-    }
-
-    if (options.responseType === 'blob') {
-      return (await response.blob()) as TResponse;
-    }
-
-    return (await response.json()) as TResponse;
   }
 
   private buildUrl(path: string, query?: Record<string, QueryValue>): string {
