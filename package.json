@@ -8,6 +8,10 @@
     "url": "https://richardmcquiston.com"
   },
   "license": "MIT",
+  "funding": {
+    "type": "individual",
+    "url": "https://donate.stripe.com/00w5kD3Gj1Xo9v7gVOcs800"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/RichardMcQuiston01/crowdstrike-api-ts.git"
